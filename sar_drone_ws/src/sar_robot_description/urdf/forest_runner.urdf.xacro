@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+  forest_runner.urdf.xacro
+  Low-Altitude Bush/Forest Runner — base description.
+  Camera, VOC, and audio sensor plugins added in Task 3.
+-->
+<robot name="forest_runner" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <link name="base_link">
+    <inertial>
+      <mass value="1.5"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0347" ixy="0" ixz="0"
+               iyy="0.0458" iyz="0"
+               izz="0.0977"/>
+    </inertial>
+    <visual>
+      <geometry><box size="0.47 0.47 0.11"/></geometry>
+    </visual>
+    <collision>
+      <geometry><box size="0.47 0.47 0.11"/></geometry>
+    </collision>
+  </link>
+
+  <!-- Forward-facing camera placeholder — plugin added in Task 3 -->
+  <link name="camera_link">
+    <visual><geometry><box size="0.02 0.02 0.02"/></geometry></visual>
+  </link>
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+    <origin xyz="0.1 0 -0.04" rpy="0 0 0"/>
+  </joint>
+
+  <!-- VOC sensor placeholder -->
+  <link name="voc_sensor_link">
+    <visual><geometry><cylinder radius="0.01" length="0.02"/></geometry></visual>
+  </link>
+  <joint name="voc_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="voc_sensor_link"/>
+    <origin xyz="-0.05 0 -0.03" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Microphone placeholder -->
+  <link name="mic_link">
+    <visual><geometry><sphere radius="0.008"/></geometry></visual>
+  </link>
+  <joint name="mic_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="mic_link"/>
+    <origin xyz="0 0.05 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>
