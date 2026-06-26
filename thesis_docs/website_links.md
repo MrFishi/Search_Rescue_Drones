@@ -1,0 +1,8 @@
+[PX4 Autopilot User Guide](https://docs.px4.io/main/en/) 
+Top-level PX4 documentation home covering the full platform: hardware setup, configuration, flight modes, safety, and development for all supported vehicle types.
+
+[PX4 Simulation Overview](https://docs.px4.io/main/en/simulation/)
+Covers SITL/HITL simulation concepts, supported simulators (Gazebo, SIH), MAVLink API, UDP port configuration, and how to launch PX4 SITL with make targets.
+
+[PX4 Hardware In The Loop (HITL) Simulation](https://docs.px4.io/main/en/simulation/hitl)
+How to run PX4 firmware on real Pixhawk hardware while simulating vehicle dynamics externally — useful for testing hardware-level behaviour without propellers attached.
