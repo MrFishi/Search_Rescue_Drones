@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-offboard_hello_world.py
+hover.py
 
 Minimal PX4 offboard control node via uXRCE-DDS bridge.
 
@@ -13,7 +13,7 @@ What it does:
 PX4 handles ALL motor control — this node only sends high-level position setpoints.
 
 To run:
-  ros2 run sar_drone offboard_hello_world
+  ros2 run sar_drone hover
 """
 
 import rclpy

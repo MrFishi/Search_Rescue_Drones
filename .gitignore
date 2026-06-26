@@ -1,4 +1,4 @@
-# ── ROS2 / colcon ────────────────────────────────────────────────────────────
+# ROS2 / colcon 
 build/
 install/
 log/
@@ -8,7 +8,7 @@ __pycache__/
 *.pyo
 .pytest_cache/
 
-# ── C++ build ────────────────────────────────────────────────────────────────
+# C++ build 
 *.o
 *.a
 *.so
@@ -19,30 +19,30 @@ cmake_install.cmake
 Makefile
 _deps/
 
-# ── Python env ───────────────────────────────────────────────────────────────
+# Python environments
 .venv/
 venv/
 .env
 
-# ── Gazebo ───────────────────────────────────────────────────────────────────
+# Gazebo
 *.bag
 *.db3
 rosbag2_*/
 
-# ── PX4 ──────────────────────────────────────────────────────────────────────
+# PX4 
 PX4-Autopilot/build/
 
-# ── IDE ──────────────────────────────────────────────────────────────────────
+# IDE
 .vscode/
 .idea/
 *.swp
 *~
 .DS_Store
 
-# ── Keep meshes in robot_description ─────────────────────────────────────────
+# Keep meshes in robot_description
 !sar_drone_ws/src/sar_robot_description/meshes/**/*.stl
 !sar_drone_ws/src/sar_robot_description/meshes/**/*.dae
 
-# ── Misc ─────────────────────────────────────────────────────────────────────
+# Misc
 *.tmp
 *.bak

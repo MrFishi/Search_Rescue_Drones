@@ -24,7 +24,7 @@ setup(
         'console_scripts': [
             # Add new nodes here as you create them:
             # 'node_name = sar_drone.subfolder.filename:main'
-            'offboard_hello_world = sar_drone.navigation.offboard_hello_world:main',
+            'hover = sar_drone.navigation.hover:main',
         ],
     },
 )
