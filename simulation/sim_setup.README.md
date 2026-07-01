@@ -297,3 +297,141 @@ source install/setup.bash
 | px4_msgs | ROS2 message definitions for all PX4 topics |
 | sar_drone | Your thesis ROS2 package — navigation, vision, VOC/audio nodes |
 | QGroundControl | Ground control station — live telemetry dashboard |
+
+
+
+## Custom Terrain — Generating Real-World Gazebo Worlds
+
+> Adds real-world-accurate terrain (elevation, satellite imagery, buildings) to the
+> simulation instead of PX4's default flat/generic world. Useful for realistic SAR
+> bush/forest testing on actual geography rather than synthetic terrain.
+
+### Tool
+
+[`gazebo_terrain_generator`](https://github.com/saiaravind19/gazebo_terrain_generator)
+— a local web tool that generates a Gazebo Harmonic-compatible `.world` file from
+real elevation data, satellite imagery, and OSM building footprints for any
+location on Earth.
+
+### Setup
+
+```bash
+cd ~/Documents
+git clone https://github.com/saiaravind19/gazebo_terrain_generator.git
+cd gazebo_terrain_generator
+
+curl -LsSf https://astral.sh/uv/install.sh | sh   # if uv not already installed
+source ~/.bashrc
+
+export GAZEBO_TERRAIN_OUTPUT_PATH=~/Documents/gazebo_terrain_output
+echo "export GAZEBO_TERRAIN_OUTPUT_PATH=~/Documents/gazebo_terrain_output" >> ~/.bashrc
+mkdir -p ~/Documents/gazebo_terrain_output
+
+uv sync
+uv run scripts/server.py
+```
+
+Open `http://localhost:8080`. Requires a free [Mapbox](https://www.mapbox.com/) API
+token, pasted into **Settings → Mapbox API Key** (stored browser-side only, never
+touches the server or this repo).
+
+### Map Tile Source — Why Mapbox, Not Google
+
+The tool defaults to "Google Maps Satellite" as a tile source. **Changed to
+Mapbox Satellite for this project.**
+
+**Reasoning:** Google Maps/Earth imagery is licensed for viewing within Google's
+own products — there is no official API or license path for extracting raw
+satellite tiles for reuse in a third-party simulation engine. Scraping Google's
+tiles through a generator tool like this sits in a legal gray area against
+Google's Terms of Service. Mapbox, by contrast, provides a Satellite imagery
+product specifically licensed for API access via developer tokens — which is
+exactly the access method this project already uses.
+
+**Data provenance for generated worlds:**
+- Satellite imagery — Mapbox Satellite API
+- Elevation / heightmap data — Mapbox Terrain-DEM (via same API; note: source data
+  caps at zoom 14-15 — horizontal resolution is roughly 4-8m/pixel at this
+  project's latitude, regardless of the imagery zoom level setting used)
+- Building footprints — OpenStreetMap (via the tool's OSM integration)
+
+**Setting used:** Settings → Map Tile Source → `Mapbox Satellite`
+
+### Generation Workflow
+
+1. Search for or navigate to the target location
+2. Draw a **convex** polygon around the area of interest (concave/notched shapes
+   are rejected — "Polygon must be convex" error — keep boundaries simple, a
+   basic 4-6 point shape rather than hugging every contour)
+3. Set spawn marker position
+4. Settings to check:
+   - Zoom Level: 17 (default) — controls imagery sharpness only, not elevation detail
+   - Include Buildings: on/off depending on need (extrudes OSM footprints as flat
+     untextured 3D boxes — functional but not visually polished; see Known Issues)
+   - Map Tile Source: **Mapbox Satellite** (not the default)
+   - Target Gazebo Version: Harmonic (and above) — 16-bit heightmap precision
+   - Target Heightmap Size: Auto (nearest to DEM resolution)
+5. Generate, then use the **real output directory**, not the Download button (see
+   Known Issues) — `~/Documents/gazebo_terrain_output/<world_name>/`
+
+### Checking World Dimensions
+
+Real-world size and elevation range are encoded in the `.world` file's heightmap
+`<size>` element:
+
+```bash
+grep -A 2 "<size>" <world_file>.world
+```
+
+Returns `<size>width_m length_m elevation_range_m</size>` — e.g. a 1706m × 1321m
+area with 575.6m of elevation relief for the Blue Mountains test world.
+
+### Known Issues
+
+**Zip download from the tool is consistently incomplete.** "Download World"
+produces a `.zip` containing only `.world` and `model.config` — missing
+`model.sdf` and the entire `mesh/` folder (heightmap, texture, normal map,
+buildings). This happened on every generation, not a one-off. **Fix:** skip the
+zip entirely — the complete output already exists at
+`$GAZEBO_TERRAIN_OUTPUT_PATH/<world_name>/`, use that directly.
+
+**No `model.sdf` is generated at all, even in the complete output.** The tool
+bakes the model definition directly into the `.world` file rather than using a
+separate `model://`-referenced model — confirmed by loading the `.world` file
+standalone (`gz sim <file>.world`), which renders correctly with no missing
+references. Not a bug, just a different-than-expected output structure — moving
+a generated world means copying the `.world` file and its `mesh/` folder together
+as a pair.
+
+**Auto-extruded buildings are flat, untextured gray boxes with no roof detail,**
+and some buildings visible in the satellite imagery are missing entirely (OSM
+footprint data isn't complete everywhere). Acceptable for geographic layout
+accuracy; not visually polished. Improving this would require manual
+materials/lighting work or swapping in modeled buildings from Fuel — deferred as
+low-priority relative to core thesis goals (vision/VOC sensing, not environment art).
+
+**No tree/vegetation geometry is generated** — satellite imagery gives ground
+color only, not 3D plant geometry. Vegetation placement is a separate manual step
+(not yet done — planned next).
+
+**Heightmap can show artifacts at polygon edges** on large/loosely-bounded
+polygons — observed as an unnatural flat shelf/vertical drop at the boundary on
+an early (Shenton Bushland) test. Not fully root-caused; suspected DEM edge
+coverage or resampling artifact. Not reproduced on a tighter, more deliberately
+bounded polygon (Blue Mountains test) — keep polygons reasonably tight and
+convex as a precaution.
+
+---
+
+## Integrating Generated Worlds into PX4 SITL
+
+Getting a custom-generated world to actually spawn PX4's drone into it (rather
+than PX4's own bundled default) required working around several layers of
+PX4's world-resolution logic. Documented here in case a future custom world hits
+the same issues.
+
+### World File Discovery Is Hardcoded, Not Path-Searched
+
+`PX4_GZ_WORLD` (env var) is **not** a resource-path lookup — PX4's
+`px4-rc.gzsim` init script builds the world file path as a literal string
+concatenation:
