@@ -435,3 +435,159 @@ the same issues.
 `PX4_GZ_WORLD` (env var) is **not** a resource-path lookup — PX4's
 `px4-rc.gzsim` init script builds the world file path as a literal string
 concatenation:
+
+
+
+
+
+
+## Custom Gazebo Terrain — `blue_mountains`
+
+In addition to PX4's default grey-plane world, this project uses a custom
+heightmap terrain (`blue_mountains`) generated from real elevation/aerial
+imagery data. This section documents how it's set up, why it's set up this
+way, and the pitfalls hit along the way.
+
+### File locations
+
+```
+simulation/
+├── worlds/
+│   └── blue_mountains/
+│       ├── blue_mountains.world   # source SDF world file (tracked in git)
+│       └── mesh/
+│           ├── height_map.png     # greyscale heightmap
+│           ├── aerial.png         # diffuse/colour texture
+│           └── normal_map.png     # normal map
+└── scripts/
+    └── deploy_blue_mountains.sh   # one-time setup script (see below)
+```
+
+The world file itself is standard SDF (Gazebo doesn't care about the
+`.world` extension vs `.sdf` — they're the same format).
+
+### How PX4/Gazebo finds custom worlds
+
+PX4 looks for world files by name in `Tools/simulation/gz/worlds/` inside
+the `PX4-Autopilot` repo, and loads whichever one is named by the
+`PX4_GZ_WORLD` environment variable (filename without extension). This repo
+does **not** contain a copy of PX4-Autopilot — it's a separate clone with
+its own independent git history, treated as an external dependency (see
+main setup instructions above). Files need to be deployed into that
+worlds/ directory before PX4 can find them; nothing about our repo's git
+history is visible to PX4's build process.
+
+### Deploying the world (one-time per machine)
+
+```bash
+cd simulation/scripts
+./deploy_blue_mountains.sh              # defaults to ~/Documents/PX4-Autopilot
+./deploy_blue_mountains.sh /path/to/PX4-Autopilot   # or specify explicitly
+```
+
+This script:
+1. Rewrites the heightmap texture `<uri>` tags in `blue_mountains.world`
+   **in place** to absolute paths pointing at this repo's own `mesh/`
+   folder (see "Relative URI pitfall" below for why).
+2. Symlinks `blue_mountains.world` into
+   `PX4-Autopilot/Tools/simulation/gz/worlds/blue_mountains.sdf`.
+
+Because it's a symlink rather than a copy, **any subsequent edit to
+`blue_mountains.world` in this repo is picked up immediately** on the next
+sim launch — no redeploy, no rebuild, no `colcon build` needed (the world
+file isn't part of the ROS2/colcon build graph at all; Gazebo reads it
+directly at launch time).
+
+Re-run the deploy script only if: setting up on a new machine, the repo or
+PX4-Autopilot directories get moved/renamed, or the symlink is broken
+(e.g. after reinstalling PX4-Autopilot).
+
+### Launching with the custom world
+
+```bash
+ros2 launch sar_drone sim.launch.py world:=blue_mountains model_pose:="0,0,15"
+```
+
+(As of this setup, `sim.launch.py` defaults to `world:=blue_mountains
+model_pose:="0,0,15"` — pass `world:=default model_pose:="0,0,0"` to fall
+back to PX4's plain grey plane.)
+
+`model_pose` sets `PX4_GZ_MODEL_POSE`, spawning the vehicle at `x,y,z`
+(here 15m up) rather than PX4's default near-ground spawn. This matters
+for heightmap terrains specifically — the real ground elevation at the
+spawn XY isn't known in advance, so spawning high and letting the vehicle
+fall onto the terrain avoids spawning underground or deep inside a hill.
+
+### Pitfall: relative heightmap URIs don't resolve
+
+The heightmap's `<uri>` tags originally used paths relative to the world
+file (`mesh/height_map.png`). This works in plain `gz sim`, but **fails
+under PX4's SITL launch pipeline** with:
+
+```
+[Err] Parser configurations requested resolved uris, but uri [mesh/height_map.png] could not be resolved.
+[Err] Error Code 9: Msg: Failed to load a world.
+```
+
+Likely cause: PX4's build/launch process doesn't reliably set
+`GZ_SIM_RESOURCE_PATH` to the directory containing the world file in the
+way plain relative-URI resolution expects, and there's a known PX4 issue
+tracking exactly this (`GZ_BRIDGE Check GZ_SIM_RESOURCE_PATH is set
+correctly`, PX4-Autopilot#23705).
+
+**Fix:** rewrite the `<uri>` tags to absolute filesystem paths, which
+sidesteps resource-path resolution entirely. `deploy_blue_mountains.sh`
+does this automatically on every run. Trade-off: the committed
+`blue_mountains.world` file ends up with a machine-specific absolute path
+baked into it, so it's not portable as-is — re-running the deploy script
+on a new machine fixes this by rewriting the paths again.
+
+### Pitfall: drone falls through the terrain
+
+Heightmap collision in Gazebo Harmonic's default DART physics engine
+requires the Bullet collision detector — DART's default (ODE-based)
+detector doesn't handle heightmaps correctly and can let objects pass
+straight through. This is already addressed in `blue_mountains.world`:
+
+```xml
+<physics name="1ms" type="ignored">
+    <dart>
+        <collision_detector>bullet</collision_detector>
+    </dart>
+</physics>
+```
+
+If terrain collision ever breaks again (drone falls indefinitely instead
+of landing), check that the DART Bullet collision backend package is
+installed:
+
+```bash
+dpkg -l | grep -i dart-collision-bullet
+```
+
+### Live-editing the world (adding trees, etc.)
+
+Because of the symlink setup, iterating on the world is just:
+
+1. Edit `simulation/worlds/blue_mountains/blue_mountains.world` directly
+   (e.g. add `<include>` blocks for tree models, adjust the helipad pose,
+   etc.)
+2. Save.
+3. Relaunch: `ros2 launch sar_drone sim.launch.py`
+
+No deploy step, no rebuild — Gazebo reads the live file through the
+symlink every time.
+
+**Watch out:** any new local mesh/model references added to the world
+file will hit the same relative-URI resolution issue described above.
+Prefer either absolute paths (matching the existing pattern) or
+Fuel-hosted `<include>` URIs (like the existing helipad), which sidestep
+the problem entirely since they're fetched by URL rather than resolved
+from a local resource path.
+
+### Reference: relevant environment variables
+
+| Variable | Set by | Purpose |
+|---|---|---|
+| `PX4_GZ_WORLD` | `sim.launch.py` (`world` arg) | Which world file to load, by name |
+| `PX4_GZ_MODEL_POSE` | `sim.launch.py` (`model_pose` arg) | Vehicle spawn pose `x,y,z[,r,p,y]` |
