@@ -11,21 +11,22 @@ with `ros2 run sar_drone <node>` or a follow-up launch file while developing.
 
 Usage:
   ros2 launch sar_drone sim.launch.py
+  ros2 launch sar_drone sim.launch.py world:=default model_pose:="0,0,0"
   ros2 launch sar_drone sim.launch.py gz_model:=gz_x500_depth
-  ros2 launch sar_drone sim.launch.py world:=blue_mountains model_pose:="0,0,15"
   ros2 launch sar_drone sim.launch.py px4_dir:=/home/me/PX4-Autopilot
   ros2 launch sar_drone sim.launch.py launch_qgc:=false
 
 World files:
   'world' must match the filename (without .sdf) of a world already copied into
-  <px4_dir>/Tools/simulation/gz/worlds/. Default 'default' is PX4's built-in grey
-  plane. To add a custom world (e.g. blue_mountains.sdf), copy it — plus any mesh/
-  textures it references via relative URI — into that worlds/ directory first.
+  <px4_dir>/Tools/simulation/gz/worlds/. Default is 'blue_mountains' (the custom
+  terrain, live-symlinked from this repo via simulation/scripts/deploy_blue_mountains.sh).
+  Pass world:=default to fall back to PX4's built-in grey plane instead.
 
 Requires:
   - PX4-Autopilot already built at least once (so 'make' is a fast incremental build)
   - MicroXRCEAgent installed and on PATH (check with: which MicroXRCEAgent)
   - QGroundControl AppImage present at qgc_path (skip with launch_qgc:=false)
+  - blue_mountains.sdf already deployed via deploy_blue_mountains.sh (only needed once)
 """
 
 import os
@@ -59,23 +60,24 @@ def generate_launch_description():
 
     world_arg = DeclareLaunchArgument(
         'world',
-        default_value='default',
+        default_value='blue_mountains',
         description=(
-            'Gazebo world name (filename without .sdf) to load, e.g. blue_mountains. '
-            'Must already exist in <px4_dir>/Tools/simulation/gz/worlds/. '
+            'Gazebo world name (filename without .sdf) to load. Defaults to the '
+            'custom blue_mountains terrain. Pass world:=default for PX4\'s built-in '
+            'grey plane. Must already exist in <px4_dir>/Tools/simulation/gz/worlds/ '
+            '(blue_mountains is deployed there via simulation/scripts/deploy_blue_mountains.sh). '
             'Sets PX4_GZ_WORLD for the px4_sitl make process.'
         )
     )
 
     model_pose_arg = DeclareLaunchArgument(
         'model_pose',
-        default_value='0,0,0',
+        default_value='0,0,15',
         description=(
-            'Spawn pose "x,y,z[,roll,pitch,yaw]" for the vehicle, e.g. "0,0,15". '
-            'Sets PX4_GZ_MODEL_POSE for the px4_sitl make process. Useful for terrain '
-            'worlds (e.g. blue_mountains) where actual ground height at the spawn '
-            'point is unknown — spawning higher lets the vehicle fall onto terrain '
-            'rather than potentially spawning underground.'
+            'Spawn pose "x,y,z[,roll,pitch,yaw]" for the vehicle. Defaults to '
+            '"0,0,15" (15m up) to clear blue_mountains terrain on spawn. Pass '
+            'model_pose:="0,0,0" when using world:=default. Sets PX4_GZ_MODEL_POSE '
+            'for the px4_sitl make process.'
         )
     )
 
