@@ -12,8 +12,15 @@ with `ros2 run sar_drone <node>` or a follow-up launch file while developing.
 Usage:
   ros2 launch sar_drone sim.launch.py
   ros2 launch sar_drone sim.launch.py gz_model:=gz_x500_depth
+  ros2 launch sar_drone sim.launch.py world:=blue_mountains model_pose:="0,0,15"
   ros2 launch sar_drone sim.launch.py px4_dir:=/home/me/PX4-Autopilot
   ros2 launch sar_drone sim.launch.py launch_qgc:=false
+
+World files:
+  'world' must match the filename (without .sdf) of a world already copied into
+  <px4_dir>/Tools/simulation/gz/worlds/. Default 'default' is PX4's built-in grey
+  plane. To add a custom world (e.g. blue_mountains.sdf), copy it — plus any mesh/
+  textures it references via relative URI — into that worlds/ directory first.
 
 Requires:
   - PX4-Autopilot already built at least once (so 'make' is a fast incremental build)
@@ -50,6 +57,28 @@ def generate_launch_description():
         )
     )
 
+    world_arg = DeclareLaunchArgument(
+        'world',
+        default_value='default',
+        description=(
+            'Gazebo world name (filename without .sdf) to load, e.g. blue_mountains. '
+            'Must already exist in <px4_dir>/Tools/simulation/gz/worlds/. '
+            'Sets PX4_GZ_WORLD for the px4_sitl make process.'
+        )
+    )
+
+    model_pose_arg = DeclareLaunchArgument(
+        'model_pose',
+        default_value='0,0,0',
+        description=(
+            'Spawn pose "x,y,z[,roll,pitch,yaw]" for the vehicle, e.g. "0,0,15". '
+            'Sets PX4_GZ_MODEL_POSE for the px4_sitl make process. Useful for terrain '
+            'worlds (e.g. blue_mountains) where actual ground height at the spawn '
+            'point is unknown — spawning higher lets the vehicle fall onto terrain '
+            'rather than potentially spawning underground.'
+        )
+    )
+
     dds_port_arg = DeclareLaunchArgument(
         'dds_port',
         default_value='8888',
@@ -78,6 +107,8 @@ def generate_launch_description():
 
     px4_dir = LaunchConfiguration('px4_dir')
     gz_model = LaunchConfiguration('gz_model')
+    world = LaunchConfiguration('world')
+    model_pose = LaunchConfiguration('model_pose')
     dds_port = LaunchConfiguration('dds_port')
     agent_delay = LaunchConfiguration('agent_delay')
     qgc_path = LaunchConfiguration('qgc_path')
@@ -95,6 +126,7 @@ def generate_launch_description():
         cmd=['make', 'px4_sitl', gz_model],
         cwd=px4_dir,
         env=px4_env,
+        additional_env={'PX4_GZ_WORLD': world, 'PX4_GZ_MODEL_POSE': model_pose},
         output='screen',
         name='px4_sitl_gazebo',
         shell=False,
@@ -131,6 +163,8 @@ def generate_launch_description():
     return LaunchDescription([
         px4_dir_arg,
         gz_model_arg,
+        world_arg,
+        model_pose_arg,
         dds_port_arg,
         agent_delay_arg,
         qgc_path_arg,
