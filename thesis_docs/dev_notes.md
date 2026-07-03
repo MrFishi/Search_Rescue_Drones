@@ -125,7 +125,8 @@ uORB is internal to PX4. ROS2 is external. The translator between them is **Micr
                           └──────────────────────────┘  
 ```
 
-**For swarm simulation:** Each drone is a separate PX4 SITL instance on a different UDP port, with its own ROS2 namespace (`drone_1`, `drone_2`, etc.). This is already scaffolded in `sim_swarm.launch.py`.
+**For swarm simulation:** Each drone is a separate PX4 SITL instance on a different UDP port, with its own ROS2 namespace (`drone_1`, `drone_2`, etc.). This is already scaffolded in `sim_swarm.launch.py`. ---> to be made later
+
 
 ---
 
