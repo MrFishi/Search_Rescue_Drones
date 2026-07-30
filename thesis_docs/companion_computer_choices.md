@@ -1,9 +1,6 @@
 # Companion Computer & Camera Hardware Comparison
 ### Low-Altitude Bush/Forest Runner SAR Drone — Vision/AI Perception Stack
 
-*Prepared for thesis design-justification / methodology section. Pricing and availability current as of end of July 2026 — re-verify before final submission if there is a long gap between drafting and submission, as SBC/edge-AI hardware pricing shifts often.*
-
----
 
 ## 1. Context & Requirements
 
@@ -16,7 +13,32 @@ The forest runner drone requires an onboard companion computer capable of **real
 
 ---
 
-## 2. Companion Computer Options Considered
+
+## 2. Raspberry Pi vs Orange Pi
+Raspberry Pi 5 — pros:
+
+Both boards share the same 40-pin GPIO layout, so Pi HATs work on either, but only the Pi has the official PX4 documentation for wiring a companion computer to Pixhawk over uXRCE-DDS/ROS2 — meaning your dev_notes.md bridge architecture has a direct, tested reference path. 
+dev
+The Pi 5 benefits from a robust development community and extensive documentation built up over many years, which matters a lot for troubleshooting when something in your ROS2/PX4/Gazebo stack breaks at 1am before a deadline.
+Lower risk for a solo thesis — less time debugging board-specific kernel/driver quirks, more time on your actual detection pipeline.
+
+Raspberry Pi 5 — cons:
+
+No built-in NPU — for on-device object detection you'd need an external Coral USB accelerator or Hailo HAT, adding cost and complexity (and payload weight, which matters on a bush-runner drone).
+
+Orange Pi 5 — pros:
+
+Integrated Rockchip NPU delivering up to 6 TOPS of INT8 performance for AI workloads — meaningful for running a YOLO-class detector onboard without offloading to a separate Jetson.
+Eight CPU cores instead of four, useful if you're running multiple processes (vision node, ROS2 stack, logging) simultaneously, and it has a native M.2 NVMe slot, avoiding the extra HAT the Pi needs — useful for storing image/detection logs.
+
+Orange Pi 5 — cons:
+
+Community Ubuntu builds fill the gap but maintenance can be inconsistent, and mainline Linux support is improving but hardware video acceleration and NPU access don't always work on standard kernels — this is the real risk for a thesis on a deadline: you could burn weeks getting the NPU driver stack working with ROS2 Humble/Jazzy rather than on your actual detection algorithm.
+No official PX4/uXRCE-DDS companion computer guide equivalent to the Pi's — you'd be adapting the Pi tutorial yourself.
+
+
+
+## 3. Companion Computer Options Considered
 
 | Board | Price (approx.) | CPU | AI Accelerator | Peak AI Performance | Power (idle → load) | Software Ecosystem |
 |---|---|---|---|---|---|---|
@@ -31,7 +53,7 @@ TOPS (Tera/Trillion Operations Per Second) measures peak theoretical throughput 
 
 ---
 
-## 3. Decision: NVIDIA Jetson Orin Nano Super Developer Kit
+## 4. Decision: NVIDIA Jetson Orin Nano Super Developer Kit
 
 ### Rationale
 1. **Software maturity reduces development risk.** CUDA/TensorRT/JetPack is the most mature, best-documented edge-AI toolchain of the options evaluated, with the deepest pool of existing ROS2 + robotics integration examples. Given a fixed thesis timeline, minimising toolchain friction was weighted heavily against the ~$150–250 cost premium over a Raspberry Pi + Hailo or Rockchip RK3588 alternative.
@@ -58,7 +80,7 @@ TOPS (Tera/Trillion Operations Per Second) measures peak theoretical throughput 
 
 *For context: this is a few-percent contribution to overall power draw relative to a typical small-UAV motor system (~150–500W), but is non-trivial on a payload/endurance-constrained forest-runner airframe and is worth quantifying empirically once the airframe is finalised.*
 
-## 7. Key References for Design Justification
+## 6. Key References for Design Justification
 
 These support the "why thermal + RGB fusion" and "why this compute tier" arguments in the proposal/thesis:
 
