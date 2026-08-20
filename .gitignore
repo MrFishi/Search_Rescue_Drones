@@ -46,3 +46,5 @@ PX4-Autopilot/build/
 # Misc
 *.tmp
 *.bak
+
+thesis_docs
