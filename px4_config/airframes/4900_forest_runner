@@ -1,4 +1,4 @@
-#!/bin/sh
+!/bin/sh
 # PX4 Airframe: SAR Forest Runner (quadrotor-x)
 # Copy to: PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes/
 # Register in that directory's CMakeLists.txt
