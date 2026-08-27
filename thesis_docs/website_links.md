@@ -12,3 +12,9 @@ Location platform providing APIs and SDKs for maps, satellite imagery, terrain d
 
 [Gazebo Terrain Generator](https://github.com/saiaravind19/gazebo_terrain_generator) 
 Python tool that generates real-world 3D Gazebo Harmonic worlds from satellite imagery and elevation (DEM) data via a web UI — used to create accurate bush/forest terrain for SAR simulation.
+
+[Jetson Orin Nano Developer Kit User Guide](https://developer.nvidia.com/embedded/learn/jetson-orin-nano-devkit-user-guide/index.html)
+Official NVIDIA setup and hardware guide for the Jetson Orin Nano, covering JetPack SDK, BSP setup, CUDA, Docker, supported hardware, and how-to guides reference for onboard compute setup on the drone.
+
+[Jetson Linux Multimedia APIs (r36.5)](https://docs.nvidia.com/jetson/archives/r36.5/DeveloperGuide/SD/Multimedia/MultimediaApis.html) 
+Low-level Jetson multimedia APIs including libargus (camera capture), V4L2 (encode/decode), and buffer utilities relevant for integrating the Arducam with the Jetson Orin for high-framerate camera pipeline development.
