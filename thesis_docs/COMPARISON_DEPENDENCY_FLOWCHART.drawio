@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="Comparison Dependency Flowchart" id="cmpFlow">
-        <mxGraphModel dx="1422" dy="907" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="2900" background="#0D1117" math="0" shadow="0">
+        <mxGraphModel dx="1138" dy="726" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="2900" background="#0D1117" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -220,7 +220,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="e29" value="side experiment" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#F6AD55;strokeWidth=1.6;endArrow=block;endFill=1;fontColor=#E2E8F0;labelBackgroundColor=none;fontSize=11;dashed=1;dashPattern=6 4;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.997;entryY=0.405;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="n21" target="n28" edge="1">
-                    <mxGeometry x="0.0212" y="17" relative="1" as="geometry">
+                    <mxGeometry x="-0.5304" y="10" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
@@ -228,7 +228,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="e33" value="conditional" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#F6AD55;strokeWidth=1.6;endArrow=block;endFill=1;fontColor=#E2E8F0;labelBackgroundColor=none;fontSize=11;dashed=1;dashPattern=6 4;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="n21" target="n32" edge="1">
-                    <mxGeometry x="0.6435" y="-17" relative="1" as="geometry">
+                    <mxGeometry x="-0.7958" y="-26" relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="1128" y="920"/>
                             <mxPoint x="1128" y="930"/>
