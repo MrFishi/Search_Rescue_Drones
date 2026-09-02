@@ -351,3 +351,40 @@ Record after the P0.7 sim smoke test and the P0.8 Jetson bring-up. Reproducibili
 | Dataset versions | `heridal_yolo_v1`, `weitefeld_yolo_v1`, `bush_v1` | |
 
 ---
+
+
+
+
+## 2026-09-02/03 — P0.4 training environment (WSL2, RTX 4070)
+
+Done: `vision/` moved out of `sar_drone_ws/src/sar_drone/sar_drone/vision/` to
+top-level `~/Search_Rescue_Drones/vision/` (sibling of sar_drone_ws), matching
+`simulation/`/`scripts/`. Clean git renames, both machines synced.
+
+P0.4 environment built in WSL2 (Ubuntu 24.04, RTX 4070, driver 591.86, CUDA
+capability 13.1). Two corrections to the guide's P0.4 commands, worth noting
+for reproducing on a fresh box later:
+
+- **`cu121` is gone from PyTorch's index** (checked live, Sept 2026 — current
+  options are cu118/cu126/cu128). Used `cu128` instead:
+  `uv add torch torchvision --default-index https://download.pytorch.org/whl/cu128`
+- `pyproject.toml` needs manual fixup after `uv init` + `uv add torch`:
+  - `--default-index` sets that index as the project-wide default (breaks
+    every non-torch package resolution). Fix: use a named `[[tool.uv.index]]`
+    with `explicit = true` + `[tool.uv.sources]` routing only
+    torch/torchvision to it.
+  - `requires-python` needs an upper bound (`>=3.11,<3.12`) or uv tries to
+    resolve deps for hypothetical future Python versions and fails on
+    anything not yet published for 3.12+.
+  - `vision` doesn't need to be an installable package (nothing does
+    `import vision.x` yet — every script runs by file path). Set
+    `[tool.uv] package = false` rather than fight uv_build's src-layout
+    convention. Revisit when Phase 6 wraps this as a ROS2 node — restructure
+    to `vision/vision/{...}` to match the `sar_drone` package pattern then.
+
+All deps installed: torch 2.11.0+cu128, torchvision 0.26.0+cu128, ultralytics
+8.4.138, opencv-python-headless, sahi, lxml, pandas, matplotlib, seaborn, etc.
+`torch.cuda.is_available()` verified True. `uv.lock` + `pyproject.toml`
+committed and synced across both machines.
+
+**Next: P0.5 — acquire HERIDAL + 2-3 Weitefeld strips.**
