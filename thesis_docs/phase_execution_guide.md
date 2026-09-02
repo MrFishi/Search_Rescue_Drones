@@ -1135,10 +1135,17 @@ instruments; this is the measurement.
 
 Two structural points before the detail. First, Phase 3 is a **tournament with
 elimination rounds**, not a flat grid — the winner of each stage is the only thing
-carried into the next, otherwise the run count explodes combinatorially. Second,
-every arm is evaluated on **accuracy, latency, and resource use together on the
-actual Orin Nano Super**. A model that wins on mAP but can't hit frame rate on-device
-is not an answer to O2.
+carried into the next, otherwise the run count explodes combinatorially. There is
+**one deliberate exception**: the architecture sweep passes its **top two** finalists,
+not just its single winner, into the A0/A2 head comparison. This hedges the one
+interaction a strict funnel is most likely to miss — a runner-up architecture that
+only becomes best once paired with A2's separate HPI head — for roughly two extra
+runs, against the ~120 extra a full architecture × recipe × head × init × scale grid
+would cost. The residual risk (an interaction between architecture and some stage
+*other* than the head split) is stated as a limitation in the thesis rather than
+searched over. Second, every arm is evaluated on **accuracy, latency, and resource
+use together on the actual Orin Nano Super**. A model that wins on mAP but can't hit
+frame rate on-device is not an answer to O2.
 
 See `COMPARISON_DEPENDENCY_FLOWCHART.md` for the dependency graph and what gates what.
 
@@ -1390,6 +1397,19 @@ Ultralytics codebase. **RF-DETR is Apache-2.0**, which makes it your one non-AGP
 option — worth having deliberately, since it's the fallback if the licence becomes a
 constraint on releasing code.
 
+**Exit rule — carry the top two, not just the winner.** Rank the six on mAP over the
+held-out test set, considering only architectures that clear the on-device latency and
+memory budget (a model that can't hit frame rate on the Orin is disqualified regardless
+of mAP; if fewer than two clear the budget, that shortfall is itself a reportable
+result). The **two highest-mAP budget-clearing architectures** are both carried into
+the A0/A2 head comparison (P3.4). The training-methodology decision (P3.3) is still made
+on the #1 architecture only and its winning recipe applied to both finalists — the
+recipe is assumed to transfer, which is a far weaker assumption than assuming the
+architecture ranking survives the head split. A single architecture-plus-head winner is
+chosen at P3.4, and strict elimination resumes for every stage below it. This costs two
+extra head-comparison runs, and it exists because the sweep is the one elimination whose
+loser can't be recovered later: everything downstream is conditioned on it.
+
 ### Scope decision: SSM / Mamba arms scrapped
 
 Mamba-YOLO and MambaNeXt-YOLO were scoped as the state-space arm and have been
@@ -1546,7 +1566,7 @@ yolo detect train model=yolo26s.pt data=configs/bush_v1.yaml \
 
 **Run full vs `freeze=10` as a genuine comparison arm — it's two runs and one flag,
 and given your small dataset the answer is not obvious.** Report it as a training-
-methodology result on the winning architecture only, not across all four.
+methodology result on the sweep's top-ranked (#1) architecture only, not across all four.
 
 **Drop LoRA from Phase 3 entirely.** The payoff is unclear, the implementation is
 non-trivial for conv detectors, and — the decisive point — you would end up defending
@@ -1561,8 +1581,13 @@ well-supported, and the standard method, so it needs no defending.
 
 ## P3.4 — Backbone and head comparison: A0 vs A2 vs A2b
 
-Runs on the **winning architecture from P3.1/P3.2 only.** Running it across all six
-architectures would multiply the sweep for no additional insight.
+Runs on the **top two architectures from P3.1/P3.2**, not all six and not only the
+single winner. Running it across all six would multiply the sweep for no additional
+insight; running it on only the winner would silently assume the architecture ranking
+is unaffected by the head split, which is exactly the interaction this stage can reveal.
+Both finalists take the winning training recipe from P3.3, so the added cost is two
+extra runs — the two configs of architecture #2. The single architecture-plus-head
+winner selected here is what carries into P3.5 and everything below.
 
 The problem this tests: `person` examples will substantially outnumber any individual
 HPI class, so HPI classes risk being drowned out during training. Does architectural
@@ -1698,22 +1723,27 @@ wrong.
 
 ## Phase 3 sequencing
 
-Elimination structure — each stage's winner is the only thing carried forward.
+Elimination structure — each stage's winner is the only thing carried forward, with
+one deliberate exception: the architecture sweep passes its **top two** finalists into
+the head comparison, where the single architecture-plus-head winner is chosen.
 
 | Stage | Runs | Depends on | Output |
 |---|---|---|---|
-| P3.1/P3.2 architecture sweep | 6 architectures × 1 config | Phase 2 dataset, Phase 1 pipeline | Winning architecture |
-| P3.3 training methodology | 2 runs (full vs freeze) | Winning architecture | Winning training recipe |
-| D7 init side experiment | 2 runs (COCO vs Weitefeld init) | Winning architecture | Reported separately |
-| P3.3b `yolo26-p2` ablation | 1 run | Only if YOLO26 wins | Small-object head verdict |
-| P3.4 backbone/head | 2 runs (A0, A2), +1 if A2b | Winning architecture + recipe | Winning head config |
+| P3.1/P3.2 architecture sweep | 6 architectures × 1 config | Phase 2 dataset, Phase 1 pipeline | **Top 2 architectures** |
+| P3.3 training methodology | 2 runs (full vs freeze) | #1 architecture | Winning training recipe |
+| D7 init side experiment | 2 runs (COCO vs Weitefeld init) | #1 architecture | Reported separately |
+| P3.3b `yolo26-p2` ablation | 1 run | Only if YOLO26 is a finalist | Small-object head verdict |
+| P3.4 backbone/head | **4 runs (top-2 arch × A0/A2)**, +1 if A2b | Top 2 architectures + recipe | Winning **architecture + head config** |
 | P3.5 pipeline configs | 4 configs (P-1…P-4) | Winning head config; A1 before any VLM work | Pipeline comparison |
 | P3.6 occlusion sweep | Survivors × 6 buckets | All above | Degradation curves |
 | P3.7 held-out eval | Survivors × held-out set | All above; seal verified | Headline result |
 | P3.8 scale sweep | 3 runs (n/s/m) on winner | Gate 1 | Accuracy/latency Pareto curve on the Orin — the direct answer to O2 |
 
-Roughly 30–40 training/eval runs total. The elimination structure is what keeps that
-from becoming 200+.
+Roughly 32–42 training/eval runs total — the top-2 carry-forward adds two runs at
+P3.4 over a strict funnel. The elimination structure is what keeps that from becoming
+200+; a full architecture × recipe × head × init × scale grid would be ~140 training
+runs before the pipeline, D-arm, or scale stages, which is why only the single most
+consequential elimination (the architecture sweep) is relaxed, and only by one place.
 
 **On the scale sweep (P3.8), which is new and worth the three runs.** O2 asks about
 accuracy versus latency versus resources on-device. Six architectures at one scale
@@ -1728,9 +1758,12 @@ picked a winner.
 - Sub-comparison completed with correct architectural characterisations
 - `yolo26-p2` ablation run if YOLO26 won, isolating the small-object head as a single
   variable
+- Top two architectures from the sweep carried into the head comparison; single
+  architecture-plus-head winner selected there and carried downstream
 - Scale sweep (n/s/m) on the winner, giving the on-device Pareto curve
-- Training methodology comparison (full vs freeze) reported on the winner
-- A0 vs A2 reported per-class, with the second head's latency overhead measured
+- Training methodology comparison (full vs freeze) reported on the #1 architecture
+- A0 vs A2 reported per-class on both finalists, with the second head's latency
+  overhead measured
 - All four pipeline configurations benchmarked, A1 established before VLM work began
 - Occlusion degradation curves for survivors, cross-checked against real occlusion
 - Held-out evaluation with bootstrap CIs over placements, seal verified

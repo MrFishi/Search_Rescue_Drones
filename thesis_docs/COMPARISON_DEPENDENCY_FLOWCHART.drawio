@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="Comparison Dependency Flowchart" id="cmpFlow">
-        <mxGraphModel dx="1138" dy="726" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="2900" background="#0D1117" math="0" shadow="0">
+        <mxGraphModel dx="1076" dy="419" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="2900" background="#0D1117" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -13,46 +13,46 @@
                 <mxCell id="n4" value="GATE 0  bush dataset usable + pipeline trusted" style="rhombus;whiteSpace=wrap;html=1;fillColor=#4A5568;strokeColor=#CBD5E0;fontColor=#FFFFFF;fontStyle=1;fontSize=11;spacing=6;" parent="1" vertex="1">
                     <mxGeometry x="660" y="220" width="280" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n7" value="STAGE 1 — Architecture sweep P3.1 / P3.2 · 6 runs  train + eval on bush_own only admission rule: NO custom-CUDA architectures" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                <mxCell id="n7" value="STAGE 1: Architecture sweep P3.1 / P3.2 · 6 runs  train + eval on bush_own only admission rule: NO custom-CUDA architectures  →  carry TOP 2 forward" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="560" y="410" width="480" height="110" as="geometry"/>
                 </mxCell>
-                <mxCell id="n9" value="YOLO11s  Pure CNN · local convolution Phase 1 continuity FREE — Ultralytics-native" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n9" value="YOLO11s  Pure CNN · local convolution Phase 1 continuity FREE, Ultralytics-native" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="35" y="600" width="230" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n11" value="YOLO26s  Edge-optimised CNN NMS-free · DFL-free · P2 head FREE — Ultralytics-native" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n11" value="YOLO26s  Edge-optimised CNN NMS-free · DFL-free · P2 head FREE, Ultralytics-native" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="295" y="600" width="230" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n13" value="YOLOv12s  Area-based self-attention inside a CNN FREE — Ultralytics-native" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n13" value="YOLOv12s  Area-based self-attention inside a CNN FREE, Ultralytics-native" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="555" y="600" width="230" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n15" value="YOLOv13s  CNN + hypergraph HyperACE correlation MODERATE — separate repo" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n15" value="YOLOv13s  CNN + hypergraph HyperACE correlation MODERATE, separate repo" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="815" y="600" width="230" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n17" value="RF-DETR  Full transformer · Apache-2.0 domain-transfer leader MODERATE — separate repo" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n17" value="RF-DETR  Full transformer · Apache-2.0 domain-transfer leader MODERATE, separate repo" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="1075" y="600" width="230" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n19" value="D-FINE-S  DETR + distribution refinement better localisation MODERATE — separate repo" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n19" value="D-FINE-S  DETR + distribution refinement better localisation MODERATE, separate repo" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="1335" y="600" width="230" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n21" value="GATE 1  winning architecture accuracy + latency + memory + power measured on Orin Nano Super" style="rhombus;whiteSpace=wrap;html=1;fillColor=#4A5568;strokeColor=#CBD5E0;fontColor=#FFFFFF;fontStyle=1;fontSize=11;spacing=6;" parent="1" vertex="1">
+                <mxCell id="n21" value="GATE 1  TOP 2 architectures (not just the winner) two highest-mAP arms that clear the on-device latency + memory + power budget on Orin" style="rhombus;whiteSpace=wrap;html=1;fillColor=#4A5568;strokeColor=#CBD5E0;fontColor=#FFFFFF;fontStyle=1;fontSize=11;spacing=6;" parent="1" vertex="1">
                     <mxGeometry x="620" y="850" width="360" height="140" as="geometry"/>
                 </mxCell>
-                <mxCell id="n28" value="D7 — Initialisation  COCO-init vs Weitefeld-init 2 runs · winner architecture only" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
+                <mxCell id="n28" value="D7: Initialisation  COCO-init vs Weitefeld-init 2 runs · #1 architecture only" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
                     <mxGeometry x="100" y="880" width="300" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="n30" value="Reported separately does NOT gate the tournament" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#6B46C1;strokeColor=#B794F4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="100" y="1020" width="300" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="n32" value="P3.3b — yolo26-p2 ablation  1 run · only if YOLO26 won isolates the small-object head" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
+                <mxCell id="n32" value="P3.3b: yolo26-p2 ablation  1 run · only if YOLO26 is a finalist isolates the small-object head" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
                     <mxGeometry x="1200" y="880" width="300" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="n34" value="Reported separately does NOT gate the tournament" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#6B46C1;strokeColor=#B794F4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="1200" y="1020" width="300" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="n36" value="P3.8 — Scale sweep  n / s / m on winning architecture 3 runs · Pareto curve on Orin DIRECT ANSWER TO O2" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
-                    <mxGeometry x="1200" y="1130" width="300" height="110" as="geometry"/>
+                <mxCell id="n36" value="P3.8: Scale sweep  n / s / m on the OVERALL winner (post head comparison) 3 runs · Pareto curve on Orin DIRECT ANSWER TO O2" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
+                    <mxGeometry x="1180" y="1790" width="300" height="110" as="geometry"/>
                 </mxCell>
-                <mxCell id="n38" value="STAGE 2 — Training methodology P3.3 · 2 runs · winner only" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                <mxCell id="n38" value="STAGE 2: Training methodology P3.3 · 2 runs · #1 architecture only recipe applied to BOTH finalists" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="620" y="1070" width="360" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="n40" value="Full fine-tune 100% trainable" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
@@ -64,7 +64,7 @@
                 <mxCell id="n44" value="GATE 2 winning training recipe" style="rhombus;whiteSpace=wrap;html=1;fillColor=#4A5568;strokeColor=#CBD5E0;fontColor=#FFFFFF;fontStyle=1;fontSize=11;spacing=6;" parent="1" vertex="1">
                     <mxGeometry x="660" y="1330" width="280" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="n47" value="STAGE 3 — Backbone / head P3.4 · 2–3 runs · winner only" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                <mxCell id="n47" value="STAGE 3: Backbone / head P3.4 · 4-5 runs · TOP-2 arch × A0/A2 selects the final architecture + head" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="620" y="1490" width="360" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="n49" value="A0 one backbone one multi-class head" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
@@ -76,16 +76,16 @@
                 <mxCell id="n51" value="A2b two fully separate models STRETCH ONLY" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#1A365D;strokeColor=#63B3ED;fontColor=#E2E8F0;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="950" y="1620" width="220" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="n55" value="GATE 3  winning head configuration per-class HPI mAP + 2nd-head latency cost" style="rhombus;whiteSpace=wrap;html=1;fillColor=#4A5568;strokeColor=#CBD5E0;fontColor=#FFFFFF;fontStyle=1;fontSize=11;spacing=6;" parent="1" vertex="1">
+                <mxCell id="n55" value="GATE 3  winning architecture + head config per-class HPI mAP + 2nd-head latency cost" style="rhombus;whiteSpace=wrap;html=1;fillColor=#4A5568;strokeColor=#CBD5E0;fontColor=#FFFFFF;fontStyle=1;fontSize=11;spacing=6;" parent="1" vertex="1">
                     <mxGeometry x="640" y="1780" width="320" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n59" value="STAGE 4 — Pipeline configurations P3.5 · answers O4" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                <mxCell id="n59" value="STAGE 4: Pipeline configurations P3.5 · answers O4" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#2B6CB0;strokeColor=#90CDF4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="620" y="1970" width="360" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="n61" value="P-1  Detector only  single forward pass THE FLOOR — everything must beat this" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#22543D;strokeColor=#68D391;fontColor=#E6FFFA;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n61" value="P-1  Detector only  single forward pass THE FLOOR: everything must beat this" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#22543D;strokeColor=#68D391;fontColor=#E6FFFA;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="180" y="2110" width="250" height="120" as="geometry"/>
                 </mxCell>
-                <mxCell id="n62" value="P-2  Detector + A1  double detector: crop + re-detect low-confidence ~10–15 ms per escalated crop" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#22543D;strokeColor=#68D391;fontColor=#E6FFFA;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="n62" value="P-2  Detector + A1  double detector: crop + re-detect low-confidence ~10-15 ms per escalated crop" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#22543D;strokeColor=#68D391;fontColor=#E6FFFA;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="470" y="2110" width="250" height="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="n63" value="P-3  Detector + A1 + VLM  async queue worker ≤2B params on-device throughput, not per-frame latency" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#22543D;strokeColor=#68D391;fontColor=#E6FFFA;fontSize=11;" parent="1" vertex="1">
@@ -97,10 +97,10 @@
                 <mxCell id="n69" value="GATE 4 surviving pipeline configurations" style="rhombus;whiteSpace=wrap;html=1;fillColor=#4A5568;strokeColor=#CBD5E0;fontColor=#FFFFFF;fontStyle=1;fontSize=11;spacing=6;" parent="1" vertex="1">
                     <mxGeometry x="660" y="2320" width="280" height="110" as="geometry"/>
                 </mxCell>
-                <mxCell id="n74" value="P3.6 — Occlusion sweep  survivors × 6 frozen buckets 0/10/20/40/60/80% cross-check vs real occlusion" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
+                <mxCell id="n74" value="P3.6: Occlusion sweep  survivors × 6 frozen buckets 0/10/20/40/60/80% cross-check vs real occlusion" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
                     <mxGeometry x="400" y="2500" width="320" height="130" as="geometry"/>
                 </mxCell>
-                <mxCell id="n75" value="P3.7 — Held-out class eval  survivors × sealed classes bootstrap CIs over PLACEMENTS seal verified programmatically" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
+                <mxCell id="n75" value="P3.7: Held-out class eval  survivors × sealed classes bootstrap CIs over PLACEMENTS seal verified programmatically" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#652B19;strokeColor=#F6AD55;fontColor=#FFF5EB;fontSize=11;dashed=1;dashPattern=8 4;" parent="1" vertex="1">
                     <mxGeometry x="880" y="2500" width="320" height="130" as="geometry"/>
                 </mxCell>
                 <mxCell id="n78" value="PHASE 3/4 RESULT  O1 · O2 · O4 answered degradation curves + held-out performance all reported with on-device latency and power" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;verticalAlign=middle;spacing=8;fillColor=#6B46C1;strokeColor=#B794F4;fontColor=#FFFFFF;fontStyle=1;fontSize=12;" parent="1" vertex="1">
@@ -239,12 +239,9 @@
                 <mxCell id="e35" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#F6AD55;strokeWidth=1.6;endArrow=block;endFill=1;fontColor=#E2E8F0;labelBackgroundColor=none;fontSize=11;dashed=1;dashPattern=6 4;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n32" target="n34" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e37" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#F6AD55;strokeWidth=1.6;endArrow=block;endFill=1;fontColor=#E2E8F0;labelBackgroundColor=none;fontSize=11;dashed=1;dashPattern=6 4;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="n21" target="n36" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="1079" y="920"/>
-                            <mxPoint x="1079" y="1185"/>
-                        </Array>
+                <mxCell id="e37" value="on final winner" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#F6AD55;strokeWidth=1.6;endArrow=block;endFill=1;fontColor=#E2E8F0;labelBackgroundColor=none;fontSize=11;dashed=1;dashPattern=6 4;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="n55" target="n36" edge="1">
+                    <mxGeometry x="-0.0909" y="-15" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="e39" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#A0AEC0;strokeWidth=1.6;endArrow=block;endFill=1;fontColor=#E2E8F0;labelBackgroundColor=none;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n21" target="n38" edge="1">
@@ -426,6 +423,9 @@
                             <mxPoint x="800" y="2670"/>
                         </Array>
                     </mxGeometry>
+                </mxCell>
+                <mxCell id="noteTop2" value="TOP-2 CARRY-FORWARD: why Stage 1 feeds two into Stage 3. The sweep passes its two best budget-clearing architectures into the head comparison, not just the winner. This hedges the one interaction a strict funnel misses (a runner-up that only becomes best once paired with A2&#39;s separate HPI head) for ~2 extra runs, versus ~120 for a full architecture × recipe × head × init × scale grid. Training recipe (Stage 2) is decided on the #1 architecture only and applied to both finalists. A single architecture + head winner is chosen at GATE 3, and strict elimination resumes for every stage below it." style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;verticalAlign=top;align=left;spacing=10;fillColor=#1A202C;strokeColor=#F6E05E;fontColor=#F7FAFC;fontSize=11;dashed=1;dashPattern=6 4;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="180" width="250" height="250" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
