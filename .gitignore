@@ -1,4 +1,4 @@
-# ROS2 / colcon 
+# ROS2 / colcon
 build/
 install/
 log/
@@ -8,7 +8,7 @@ __pycache__/
 *.pyo
 .pytest_cache/
 
-# C++ build 
+# C++ build
 *.o
 *.a
 *.so
@@ -29,7 +29,7 @@ venv/
 *.db3
 rosbag2_*/
 
-# PX4 
+# PX4
 PX4-Autopilot/build/
 
 # IDE
@@ -46,3 +46,6 @@ PX4-Autopilot/build/
 # Misc
 *.tmp
 *.bak
+
+# Datasets (large, not tracked — see data/raw/<name>/PROVENANCE.md for provenance)
+data/
