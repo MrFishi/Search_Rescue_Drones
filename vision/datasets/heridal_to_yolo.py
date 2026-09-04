@@ -63,13 +63,90 @@ def parse_voc(xml_path: Path) -> list[tuple[float, float, float, float]]:
     return boxes
 
 
+def _pair_ids(ids, img_dir: Path, ann_dir: Path):
+    """Given a list of stem IDs, return the (image, xml) pairs that exist on disk."""
+    pairs, missing_img, missing_xml = [], 0, 0
+    for stem in ids:
+        img = None
+        for ext in IMG_EXTS:
+            cand = img_dir / f"{stem}{ext}"
+            if cand.exists():
+                img = cand
+                break
+        xml = ann_dir / f"{stem}.xml"
+        if img is None:
+            missing_img += 1
+            continue
+        if not xml.exists():
+            missing_xml += 1
+            continue
+        pairs.append((img, xml))
+    return pairs, missing_img, missing_xml
+
+
+def _find_voc_devkit(root: Path) -> dict[str, list[tuple[Path, Path]]] | None:
+    """
+    PASCAL VOC devkit layout:
+        JPEGImages/<id>.jpg
+        Annotations/<id>.xml
+        ImageSets/Main/{train,val,test}.txt   (each: one image id per line)
+
+    The .txt split files are the AUTHORITATIVE source of which image belongs to
+    which split, so we honour them rather than re-deriving a split from filenames.
+    The devkit dir may be `root` itself or a single nested folder (as Zenodo's
+    heridal_keras_retinanet_voc.zip extracts to heridal_keras_retinanet_voc/).
+    """
+    search = [root, *(d for d in sorted(root.iterdir()) if d.is_dir())] \
+        if root.is_dir() else []
+    for base in search:
+        img_dir = base / "JPEGImages"
+        ann_dir = base / "Annotations"
+        sets_dir = base / "ImageSets" / "Main"
+        if not (img_dir.is_dir() and ann_dir.is_dir() and sets_dir.is_dir()):
+            continue
+
+        out: dict[str, list[tuple[Path, Path]]] = {}
+        # trainval.txt is train+val combined; we prefer the explicit train/val
+        # files so the dataset's own validation split is preserved. If only
+        # trainval exists, fall back to it as "train" and let --val-frac carve one.
+        split_files = {"train": "train.txt", "val": "val.txt", "test": "test.txt"}
+        have_train = (sets_dir / "train.txt").exists()
+        have_val = (sets_dir / "val.txt").exists()
+        if not (have_train and have_val) and (sets_dir / "trainval.txt").exists():
+            split_files = {"train": "trainval.txt", "test": "test.txt"}
+
+        for split, fname in split_files.items():
+            f = sets_dir / fname
+            if not f.exists():
+                continue
+            ids = [ln.strip().split()[0] for ln in f.read_text().splitlines()
+                   if ln.strip()]
+            pairs, mi, mx = _pair_ids(ids, img_dir, ann_dir)
+            if pairs:
+                out[split] = pairs
+                note = ""
+                if mi or mx:
+                    note = f"  ({mi} img missing, {mx} xml missing, skipped)"
+                print(f"  {split}: {len(pairs)} pairs from "
+                      f"ImageSets/Main/{fname}{note}")
+        if out:
+            return out
+    return None
+
+
 def find_pairs(root: Path) -> dict[str, list[tuple[Path, Path]]]:
     """
     Locate (image, xml) pairs for each HERIDAL split.
 
-    HERIDAL folder naming varies between distributions. We probe several common
-    layouts rather than hardcoding one, and report clearly if nothing matches.
+    Tries the PASCAL VOC devkit layout first (JPEGImages / Annotations /
+    ImageSets/Main split files, which is how the Zenodo keras-retinanet mirror
+    ships), then falls back to probing the simpler split-folder layouts that
+    other HERIDAL distributions use.
     """
+    devkit = _find_voc_devkit(root)
+    if devkit:
+        return devkit
+
     candidates = {
         "train": [("trainImages", "trainLabels"), ("train/images", "train/labels"),
                   ("training/images", "training/labels")],
@@ -98,8 +175,9 @@ def find_pairs(root: Path) -> dict[str, list[tuple[Path, Path]]]:
     if not out:
         sys.exit(
             f"No image/label pairs found under {root}.\n"
-            "Inspect the extracted archive and pass the correct layout, or rename "
-            "folders to trainImages/trainLabels and testImages/testLabels."
+            "Expected either a VOC devkit layout (JPEGImages/, Annotations/, "
+            "ImageSets/Main/*.txt) or split folders (trainImages/trainLabels, "
+            "testImages/testLabels). Inspect the extracted archive."
         )
     return out
 
@@ -160,21 +238,35 @@ def convert(args):
     pairs = find_pairs(root)
 
     # --- assign splits BY SOURCE IMAGE ------------------------------------- #
+    # If the dataset already ships a val split (VOC devkit val.txt), honour it.
+    # Otherwise carve one out of train at --val-frac. Either way the assignment
+    # is per SOURCE IMAGE, so a photo's tiles never span two splits.
     assign: dict[Path, str] = {}
-    train_pairs = pairs.get("train", [])
-    shuffled = train_pairs[:]
-    rng.shuffle(shuffled)
-    n_val = int(len(shuffled) * args.val_frac)
-    if shuffled and n_val == 0:
-        n_val = 1  # never produce an empty val split
-    for img, _ in shuffled[:n_val]:
-        assign[img] = "val"
-    for img, _ in shuffled[n_val:]:
-        assign[img] = "train"
+
+    if pairs.get("val"):
+        for img, _ in pairs["train"]:
+            assign[img] = "train"
+        for img, _ in pairs["val"]:
+            assign[img] = "val"
+        n_train, n_val = len(pairs["train"]), len(pairs["val"])
+        print("  using dataset-provided train/val split (not re-carving)")
+    else:
+        train_pairs = pairs.get("train", [])
+        shuffled = train_pairs[:]
+        rng.shuffle(shuffled)
+        n_val = int(len(shuffled) * args.val_frac)
+        if shuffled and n_val == 0:
+            n_val = 1  # never produce an empty val split
+        for img, _ in shuffled[:n_val]:
+            assign[img] = "val"
+        for img, _ in shuffled[n_val:]:
+            assign[img] = "train"
+        n_train = len(shuffled) - n_val
+
     for img, _ in pairs.get("test", []):
         assign[img] = "test"
 
-    print(f"Source images -> train {len(shuffled) - n_val}, val {n_val}, "
+    print(f"Source images -> train {n_train}, val {n_val}, "
           f"test {len(pairs.get('test', []))}")
 
     for split in ("train", "val", "test"):
