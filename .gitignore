@@ -49,3 +49,6 @@ PX4-Autopilot/build/
 
 # Datasets (large, not tracked — see data/raw/<name>/PROVENANCE.md for provenance)
 data/
+
+
+!data/raw/*/PROVENANCE.md
