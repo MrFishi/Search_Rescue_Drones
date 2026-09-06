@@ -47,8 +47,15 @@ PX4-Autopilot/build/
 *.tmp
 *.bak
 
-# Datasets (large, not tracked — see data/raw/<name>/PROVENANCE.md for provenance)
-data/
-
-
+# Datasets (large, not tracked — see PROVENANCE.md files for provenance)
+data/*
+!data/raw
+!data/processed
+data/raw/*
+!data/raw/*/
+data/raw/*/*
 !data/raw/*/PROVENANCE.md
+data/processed/*
+!data/processed/*/
+data/processed/*/*
+!data/processed/*/PROVENANCE.md
