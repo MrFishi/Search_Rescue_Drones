@@ -152,10 +152,27 @@ def index_images(images_root: Path) -> dict[tuple[int, int], Path]:
 # --------------------------------------------------------------------------- #
 
 def to_xyxy(r, H: int, origin: str):
-    """data.txt box -> absolute (x1, y1, x2, y2). See format caveat in docstring."""
+    """data.txt box -> absolute (x1, y1, x2, y2). See format caveat in docstring.
+
+    Three interpretations of "by", since the paper's wording ("lower-left
+    corner" of the box) is ambiguous about which image convention it assumes:
+      - 'topleft':      by is the box's TOP edge; extend downward. (legacy default)
+      - 'bottomleft':   by is measured from the BOTTOM of the whole image
+                        (i.e. the image itself is y-flipped).
+      - 'bottomedge':   by is literally the row of the box's BOTTOM edge under
+                        standard top-left image coordinates (y down); extend
+                        upward from it. This is the literal reading of "lower-
+                        left corner of a bounding box" and was previously
+                        missing as an option -- verify against --verify renders,
+                        especially on SMALL boxes. A vertical offset of one box
+                        height is invisible on large boxes (still overlaps a
+                        big structure) but completely misses small ones.
+    """
     x1, w, h = r["bx"], r["bw"], r["bh"]
     if origin == "topleft":
         y1 = r["by"]
+    elif origin == "bottomedge":
+        y1 = r["by"] - h
     else:  # 'bottomleft': y measured from the image bottom
         y1 = H - r["by"] - h
     return float(x1), float(y1), float(x1 + w), float(y1 + h)
@@ -384,7 +401,7 @@ def main():
                    help="Lower than HERIDAL: these frames are mostly empty forest")
     p.add_argument("--val-frac", type=float, default=0.15)
     p.add_argument("--test-frac", type=float, default=0.15)
-    p.add_argument("--box-origin", choices=["topleft", "bottomleft"],
+    p.add_argument("--box-origin", choices=["topleft", "bottomleft", "bottomedge"],
                    default="topleft", help="See the format caveat in the docstring")
     p.add_argument("--core-only", action="store_true",
                    help="Use only the first 34,424 peer-reviewed entries")

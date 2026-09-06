@@ -1,0 +1,8 @@
+path: /home/royri/Search_Rescue_Drones/data/processed/weitefeld_yolo_3cls_v1
+train: tiny2/images
+val: tiny2/images
+nc: 3
+names:
+  0: shelter
+  1: object
+  2: person

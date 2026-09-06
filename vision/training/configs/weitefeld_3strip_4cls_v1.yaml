@@ -1,0 +1,10 @@
+path: /home/royri/Search_Rescue_Drones/data/processed/weitefeld_yolo_v1
+train: train/images
+val: val/images
+test: test/images
+nc: 4
+names:
+  0: unknown
+  1: shelter
+  2: object
+  3: person
