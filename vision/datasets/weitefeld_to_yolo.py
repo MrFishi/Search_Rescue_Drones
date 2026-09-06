@@ -112,7 +112,20 @@ def parse_data_txt(path: Path, core_only: bool, drop_unknown: bool):
 
         # No explicit finding ID in the documented format. Comments are authored
         # per finding and repeat across back-projections, so they act as a key.
-        fkey = hashlib.sha1(f"{vol_comment}|{pol_comment}".encode()).hexdigest()[:12]
+        # Normalise case/whitespace first: "Shelter" and "shelter" describing the
+        # same object should hash identically, not fragment into two findings.
+        # Note this does NOT fix the opposite failure mode -- two genuinely
+        # different objects both described with a generic phrase like "shelter"
+        # will still collide into one key. That is a structural limitation of
+        # grouping by comment text with no real finding-ID column in data.txt,
+        # not something normalisation can repair. Document it as a known
+        # limitation rather than treat it as solved.
+        def _norm(s: str) -> str:
+            return " ".join(s.lower().split())
+
+        fkey = hashlib.sha1(
+            f"{_norm(vol_comment)}|{_norm(pol_comment)}".encode()
+        ).hexdigest()[:12]
 
         rows.append({"strip": strip, "img_no": img_no, "cls": cls,
                      "bx": bx, "by": by, "bh": bh, "bw": bw, "finding": fkey})
