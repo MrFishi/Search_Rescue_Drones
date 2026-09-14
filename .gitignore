@@ -59,4 +59,7 @@ data/processed/*
 !data/processed/*/
 data/processed/*/*
 !data/processed/*/PROVENANCE.md
-graphify-out/
+# graphify-out/ is tracked so the knowledge graph syncs across machines via git.
+# Only the machine-local pointer files are excluded (regenerated on every run).
+graphify-out/.graphify_root
+graphify-out/.graphify_python
