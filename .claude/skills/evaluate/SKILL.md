@@ -21,7 +21,7 @@ critique and a fix list — never replacement prose.
 
 1. **The draft** — a section or the full document. If it lives on Overleaf, work from
    the git-synced clone; if local, read the `.tex` directly.
-2. **The rubric** in `thesis/writeups/<active-writeup>/rubric/` (see `thesis/writeups/ACTIVE.md`) — grade against the actual file.
+2. **The rubric** in `thesis/writeups/<active-writeup>/rubric_and_template/` (see `thesis/writeups/ACTIVE.md`) — grade against the actual file.
 3. **The current project docs** for factual checks:
    `training_nomenclature.md` (repo root — model/run naming and what structurally
    distinguishes the six Phase 3 architectures),

@@ -68,7 +68,7 @@ YOLOv13's hypergraph correlation described as attention, which is YOLOv12's).
   exists, say so and route to `/find-refs`.
 - **Exemplars in `thesis/writeups/<active-writeup>/exemplars/` (see `thesis/writeups/ACTIVE.md`) are STRUCTURE references only.** Learn what a
   high-mark answer looks like; never lift their wording.
-- Rubric lives in `thesis/writeups/<active-writeup>/rubric/` (see `thesis/writeups/ACTIVE.md`). Always grade against the actual rubric file,
+- Rubric lives in `thesis/writeups/<active-writeup>/rubric_and_template/` (see `thesis/writeups/ACTIVE.md`). Always grade against the actual rubric file,
   not a remembered version.
 - Prefer precise, hedged, evidence-backed claims over strong unsupported ones —
   that is what the rubric rewards.

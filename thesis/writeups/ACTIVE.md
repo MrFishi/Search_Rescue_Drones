@@ -1,6 +1,6 @@
 # Active write-up
 
-s1_proposal_lit_review
+sem1_proposal_lit_review
 
 ---
 
@@ -14,5 +14,5 @@ start the next write-up. Don't pre-create folders for stages you haven't reached
 
 | Folder | Status | Notes |
 |---|---|---|
-| `s1_progress_report` | complete (submitted) | Kept for continuity — later write-ups read its `draft/`, not a rubric (none needed here, already graded). |
-| `s1_proposal_lit_review` | **active** | Working on this now. Rubric in `rubric/`, a strong past example in `exemplars/`. |
+| `sem1_progress_report` | complete (submitted) | Kept for continuity — later write-ups read its `final_submission/`, not a rubric (none needed here, already graded). |
+| `sem1_proposal_lit_review` | **active** | Working on this now. Rubric + template in `rubric_and_template/`, a strong past example in `exemplars/`. |

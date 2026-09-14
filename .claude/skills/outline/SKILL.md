@@ -21,7 +21,7 @@ before a single sentence of prose is written. This skill never writes the sectio
 
 1. **Which section**, and the target length/word budget if known. If not specified,
    ask before proceeding — do not guess.
-2. **The rubric** — read the actual file in `thesis/writeups/<active-writeup>/rubric/` (see `thesis/writeups/ACTIVE.md`). Never grade or plan
+2. **The rubric** — read the actual file in `thesis/writeups/<active-writeup>/rubric_and_template/` (see `thesis/writeups/ACTIVE.md`). Never grade or plan
    against a remembered rubric; criteria wording matters.
 3. **One exemplar** in `thesis/writeups/<active-writeup>/exemplars/` (see `thesis/writeups/ACTIVE.md`) — for structure, depth, and what a
    high-scoring version of this section looks like. Structure only, never wording.

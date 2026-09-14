@@ -183,3 +183,24 @@ the zip used a different name. Restart Claude Code and it'll be available as
 aid on *your own* prose — it pairs fine with this loop, which is coach-and-critic, not
 ghostwriter. Don't use it to disguise AI-generated text as your own; that's what
 academic-integrity rules exist to catch. Keep the writing yours and use it to polish.
+
+---
+
+## ⚠️ Before this repo ever goes public
+
+`papers/`, `thesis/writeups/*/rubric/`, and `thesis/writeups/*/exemplars/` are
+currently tracked in git and synced between machines. They contain copyrighted
+paper PDFs, UWA-internal rubric material, and another student's exemplar submission
+— none of that should end up in a public repo.
+
+**Deleting these files is NOT enough** — they'd still be recoverable from every
+earlier commit in `git log`. Before ever making this repo public, run:
+
+```bash
+pip install git-filter-repo
+git filter-repo --path papers/ --path thesis/writeups/s1_proposal_lit_review/rubric/ --path thesis/writeups/s1_proposal_lit_review/exemplars/ --invert-paths
+```
+
+This rewrites history so those paths never existed. Requires a force-push
+afterward. Do this deliberately, before flipping visibility — not as an
+afterthought.
