@@ -14,6 +14,7 @@ skill automatically when a task matches its description.
 | `/evaluate` | Grades a draft against the marking rubric and returns a prioritised, mark-raising fix list. Flags unsupported claims, missing citations, and inconsistencies with the project docs. Never rewrites your prose. *(run on Opus)* |
 | `/find-refs` | Finds supporting references for a claim or section and proposes exactly where to place citations. Checks `references.bib`/Zotero first. Never invents a citation, DOI, or key. |
 | `/humanizer` | Rewrites AI-sounding prose so it reads like you wrote it, without changing meaning. Third-party skill (blader/humanizer, MIT), based on Wikipedia's "Signs of AI writing." Use to polish your own drafts — not to launder AI-generated text. |
+| `/list-skills` | Lists every skill currently available — repo-local (this folder) and global/built-in. |
 
 ## Drafted, not active
 

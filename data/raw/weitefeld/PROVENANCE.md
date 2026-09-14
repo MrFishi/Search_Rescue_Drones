@@ -299,3 +299,35 @@ run for 300 epochs instead of 50 to test convergence directly:
 Clean convergence across all three classes confirms the class remap
 (`unknown` dropped, `shelter/object/person` reindexed 0/1/2) and box geometry
 are correct for `weitefeld_yolo_3cls_v1`. Baseline B proceeds on this dataset.
+
+---
+
+## Addendum, 2026-09-07: label duplication found while reconciling Baseline B instance counts
+
+While logging Baseline B's results, the validation split showed a mismatch:
+571 labels exist on disk (`sort` across all val label files), but Ultralytics
+reported only 341 instances during training and evaluation.
+
+Checked directly:
+
+```
+for f in val/labels/*.txt; do sort "$f" | uniq -d; done | wc -l   # 226
+awk '{$1=$1; print}' data.txt | sort | uniq -d | wc -l            # 1033
+```
+
+**226 of 571 val-split label lines are exact duplicates**, traced back to
+**1,033 exact-duplicate rows in the raw data.txt itself** (out of 34,424 core
+entries, ~3%) — not something introduced by conversion. Plausibly two
+volunteers independently reporting the same sighting, both landing in the
+core file identically, consistent with the crowd-sourced collection process.
+
+Ultralytics' dataset loader silently drops exact-duplicate labels during
+caching, so the instance counts training and evaluation actually used (341)
+are correct, and Baseline B's reported per-class metrics are valid as-is.
+This is a cosmetic mismatch between the converter's logged/raw counts and
+what training uses, not a correctness issue, and was not fixed for this run.
+
+Worth adding a dedup step to `weitefeld_to_yolo.py` if raw dataset-size
+counts are ever reported directly (e.g. in a methods section), since the
+1,033 duplicate rows would otherwise overstate the dataset's effective size
+by about 3%.
