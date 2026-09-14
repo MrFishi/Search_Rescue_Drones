@@ -58,4 +58,4 @@ data/raw/*/*
 data/processed/*
 !data/processed/*/
 data/processed/*/*
-!data/processed/*/PROVENANCE.md
+!data/processed/*/PROVENANCE.mdgraphify-out/
