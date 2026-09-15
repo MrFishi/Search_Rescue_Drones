@@ -328,6 +328,29 @@ Unified memory shared between the detector, the VLM, and the ROS2 stack. This is
 
 > **Admission rule for architectures:** nothing requiring custom CUDA kernels. SSM/Mamba detectors were scrapped under this rule — `selective_scan` kernels must compile on x86, compile again on ARM64, *and* survive TensorRT export, any of which can fail outright rather than merely slowly.
 
+### Bring-up status (P0.8 complete, 2026-09-15)
+
+Flashed and running. JetPack 6.2.2 with the `-super` device tree; `MAXN_SUPER`
+persists across reboots. AR0822 verified at 4K on the CAM1 connector. CUDA
+PyTorch with YOLO11n confirmed working end to end on a captured camera frame.
+Working commands and gotchas are in the repo `README.md`; the capture command
+there runs at 1920x1080 UYVY, so 4K is confirmed available rather than in use.
+
+Still open (deferred until after the sem 1 proposal submission):
+
+- **Module part number unverified.** Confirm the board is P3767-0005 and not
+  P3767-0003. A -0003 gives a mismatched BSP that underperforms silently, so
+  every latency number measured before this check is provisional.
+- **No TensorRT numbers yet.** Inference so far is PyTorch. P0.8 step 5 also
+  calls for `yolo export format=engine half=True` and a re-run on the engine,
+  with FP32 against FP16 logged to `results/runs.csv`. Phase 0's exit criterion
+  asks for TensorRT inference with numbers logged, so this is the one part of
+  the Jetson block still outstanding. The ratio predicts the speedup for every
+  Phase 3 model, so it is worth having early.
+- **Thermal soak not run.** See below.
+- **CAM0 connector came loose during setup.** Unused, but worth a visual check
+  before it becomes an intermittent fault chased in software.
+
 ### Thermals
 
 Loop inference for 10 minutes under MAXN SUPER with `jtop` open. If it throttles on a desk with the stock fan, it will throttle worse inside an airframe fairing at low airspeed. That's a Phase 7 airframe constraint worth discovering in month 1.
@@ -344,9 +367,9 @@ Record after the P0.7 sim smoke test and the P0.8 Jetson bring-up. Reproducibili
 | Gazebo | Harmonic `<version>` | |
 | ROS2 distro | Humble | |
 | uXRCE-DDS Agent | `<version>` | |
-| JetPack / L4T | `<version>` | |
-| Arducam driver | `<version>` | |
-| CUDA / TensorRT | `<version>` | |
+| JetPack / L4T | JetPack 6.2.2, `-super` device tree | 2026-09-15 |
+| Arducam driver | `<version>` — read off the running Jetson, not yet recorded | |
+| CUDA / TensorRT | `<version>` — read off the running Jetson, not yet recorded | |
 | Ultralytics | pinned in `uv.lock` | |
 | Dataset versions | `heridal_yolo_v1`, `weitefeld_yolo_v1`, `bush_v1` | |
 
