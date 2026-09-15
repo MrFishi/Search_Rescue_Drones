@@ -34,12 +34,45 @@ examiner raises them.
   (dataset quality/label-noise caveats — genuinely useful for honestly citing a
   dataset's limitations against what the literature claims). Search broadly
   (`find . -name "*.md"` or equivalent) rather than assuming a fixed list, so new
-  docs get picked up automatically.
+  docs get picked up automatically. `phase_execution_guide.md` in particular lays out
+  the full plan in more raw detail than any summary document, so don't treat a
+  higher-level planning doc (e.g. the active write-up's outline) as a substitute for
+  reading it directly.
+- `results/runs.csv` — the actual logged numeric results (per-class metrics, git SHA,
+  device, occlusion mode/fraction). This is real evidence, not narrated in prose
+  elsewhere, and belongs in Progress-to-Date-facing positioning and any claim about
+  what's been measured so far.
   **Exclude:** `CLAUDE.md` files and anything under `.claude/` — those are agent
   instructions, not project facts — and `thesis/writeups/*/exemplars/`, which are
   structure references only, not project content.
 
 ## Procedure
+
+### Gap-coverage check (run this first, every time)
+Before triaging, synthesising, or drafting anything, build the full list of
+technologies, methods, datasets, and claims named anywhere across every `.md` file
+read above — not just the active write-up's outline, which is a summary and can omit
+things a source doc like `phase_execution_guide.md` names explicitly (e.g. a specific
+candidate VLM, OVD, or architecture). Cross-reference that list against `papers/` and
+`thesis/references.bib`, and report it in three tiers, not two:
+
+- **Solidly backed** — a citation exists and genuinely supports the specific claim
+  being made (not just adjacent to the topic).
+- **Thin** — a citation exists but the claim leans on it more than it can bear: a
+  single incidental data point standing in for a general claim, a source that's
+  tangential to what's actually being asserted, or one source doing double duty for
+  several distinct claims. Name what a stronger source would need to establish, but
+  don't treat this as blocking — per `find-refs`'s own rule, one strong source beats
+  three weak ones, so only flag a real thinness, not every single-citation claim on
+  principle.
+- **Missing** — named in the project docs with no matching paper or bib entry at all.
+
+Report all three, not just "missing" — do not silently skip a thin claim because it
+technically has *a* citation, and do not flag something solid as needing more just to
+pad the list. Do not skip this check because it wasn't the specific theme asked
+about, and do not write around a gap by describing the technology from general
+knowledge instead of a cited source. This check runs unprompted every time, since a
+missed gap in this section costs marks in the highest-weighted rubric criterion.
 
 ### Triaging a single paper
 Produce a structured card:
@@ -74,9 +107,9 @@ cite, not to hide.
 
 ## Output format
 
-Per-paper cards, or a comparison table plus themed synthesis, or a positioning
-statement — whichever the task calls for. Always attach cite keys and flag "needs
-adding" for anything not yet in the bib.
+Start with the gap-coverage list (even if empty — say so explicitly) before any
+per-paper cards, comparison table, or positioning statement. Always attach cite keys
+and flag "needs adding" for anything not yet in the bib.
 
 ## Hard rules
 
@@ -86,3 +119,7 @@ adding" for anything not yet in the bib.
 - Do not overstate novelty. If the differentiator is thin, say so and suggest how to
   sharpen the actual contribution rather than inflating the claim.
 - Never fabricate a paper's results or a citation — route unknowns to `find-refs`.
+- **Never skip the gap-coverage check because the invocation only asked about one
+  theme.** A narrow request ("triage this PDF") still runs it — cheaply, since it's
+  just a cross-reference — so a gap elsewhere in the project docs never goes
+  unnoticed simply because nobody happened to ask about that theme this time.
