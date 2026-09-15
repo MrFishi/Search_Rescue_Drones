@@ -18,7 +18,7 @@ never to ghostwrite whole sections. Specifically:
 5. Revise and re-evaluate. Repeat for higher marks.
 
 If asked to "write section X," produce an outline and offer to review what I draft
-— do not write the section for me.
+When i do ask to write sections it must be written to top quality and usually will be so fixes can be implemented or i will ask to write sections from outline since i will be hevaily changing the wording or ideas etc. 
 
 ## Model roles
 
