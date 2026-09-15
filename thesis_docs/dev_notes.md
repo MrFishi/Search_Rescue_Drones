@@ -388,3 +388,14 @@ All deps installed: torch 2.11.0+cu128, torchvision 0.26.0+cu128, ultralytics
 committed and synced across both machines.
 
 **Next: P0.5 — acquire HERIDAL + 2-3 Weitefeld strips.**
+
+
+I am using a DJI Lito X1 to make my HPI dataset
+
+
+Size	Accuracy	Latency
+nano	75%	        8ms
+small	82%	        20ms
+medium	88%     	45ms
+
+note to self: example values which we would plot to get a pareto front for different model sizes to determine which is best size of the model to use, not just a single operating point 

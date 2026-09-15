@@ -115,7 +115,12 @@ Project Summary (<300 words, not counted) is written last.
 - Point: frozen, seeded buckets on disk (seed 42) so every model sees byte-identical images. Status: tool built (`vision/occlusion/occlude.py`).
 - Point: label policy — occluded targets keep their full original box (otherwise it becomes a small-object experiment).
 - Point: training-time use applies distractor occluders on background to prevent "occluder ⇒ target" shortcut learning.
-- Point: O1 confound decomposition — controlled (synthetic on HERIDAL, isolates occlusion), in-the-wild (bush data: occlusion + altitude + camera), scale control (downscale to HERIDAL pixels-per-person). Evidence: `phase_execution_guide.md` D5.
+- Point: O1 confound decomposition. Real bush imagery differs from HERIDAL in three ways at once (occlusion, altitude, camera), so one before/after number can't say which caused a drop. Three tests separate them:
+  - **Controlled** — synthetic occlusion sweep (0–80%) on HERIDAL's own images. Same camera/altitude/dataset, only occlusion varies → isolates occlusion alone.
+  - **In-the-wild** — the detector run on real bush imagery as collected. The honest deployment number, but occlusion + altitude + camera are confounded together.
+  - **Scale-check** — bush imagery downscaled to match HERIDAL's pixels-per-person. Cancels out most of the altitude/camera gap → isolates how much of the in-the-wild drop is occlusion vs. scale/camera.
+  - Controlled + scale-check together let the write-up say how much of the in-the-wild number (O1's headline result) is actually attributable to occlusion, rather than reporting one confounded drop and leaving the cause unstated. Evidence: `phase_execution_guide.md` D5.
+  - Note: this detail lives in Process, not in O1 itself — O1 was deliberately kept short and plain ("How much do precision, recall, and mAP@50 drop when the baseline detector, trained on open-terrain SAR data, is tested on bush imagery under increasing occlusion?").
 - `[cite: cutout / copy-paste / synthetic occlusion augmentation]`, `[cite:pop_infrared2025]` for occluded-person detection context.
 - **Figure:** one image at 0 / 40 / 80 % texture occlusion rendered by the tool's verify output.
 
