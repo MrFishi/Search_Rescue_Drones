@@ -16,16 +16,30 @@
 
 | Section (template order) | Rubric weight | Budget | Write order |
 |---|---|---|---|
-| 1 Introduction | part of /30 | 300 | 6th |
-| 2 Literature Review | part of /30 | 900 | 4th |
-| 3 Project Objectives | part of /30 | 350 | **1st** |
-| 4 Project Process | /25 | 1050 | 2nd |
-| 5 Timeline and Risk Management | /15 | 500 | 5th |
-| 6 Progress to Date | /20 | 800 | 3rd |
-| Slack | — | 100 | — |
+| 1 Introduction | part of /30 | 200 | 6th |
+| 2 Literature Review | part of /30 | **1800** | 4th |
+| 3 Project Objectives | part of /30 | 270 | **1st** |
+| 4 Project Process | /25 | 1000 | 2nd |
+| 5 Timeline and Risk Management | /15 | 230 | 5th |
+| 6 Progress to Date | /20 | 500 | 3rd |
+| Slack | — | 0 | — |
 | **Body total** | | **4000** | |
 
 Project Summary (<300 words, not counted) is written last.
+
+**Budget revision (2026-09-16):** rebalanced to push the Literature Review to
+~1800 words (from 900) since it and Process are the two highest-value sections
+to get right, at the cost of Intro/Objectives/Timeline/Progress. Progress's cut
+is weighted toward §6.1/§6.4/§6.5 (narrative) rather than §6.3 (baseline results
++ critical analysis), which keeps most of its original budget since that's the
+actual mark-driver in that section. Hard cap is 4,000 words (Intro → Progress to
+Date only; confirmed in the proposal guide — excludes title page, contents,
+Gantt, references, appendices).
+
+**Working method:** draft every section as fully/well as possible first: do not
+pre-cull while writing. Cut for word count at the end, guided by `/evaluate`
+output, once the whole draft exists and it's clear which sentences are actually
+carrying marks vs which are padding.
 
 **Rubric's bar for the top band, per criterion (verbatim):**
 - Intro/LR/Objectives HD: *"Comprehensive coverage of the historical background and state of the art with sound critical analysis and interpretation. Research hypothesis and project objectives clearly stated and discussed in detail."*
@@ -43,11 +57,11 @@ Project Summary (<300 words, not counted) is written last.
 
 ---
 
-## 3. Project Objectives — ~350 words (WRITE FIRST)
+## 3. Project Objectives — ~270 words (WRITE FIRST)
 
 **Exemplar moves:** hypothesis in 2–3 sentences with a measurable success condition → objectives as labelled blocks, each with one rationale clause → one summary table (objective → mechanism → what's measured) → Significance ending with "the contribution is X, which prior work A and B have not done because…".
 
-### 3.1 Research Hypothesis (~80 words)
+### 3.1 Research Hypothesis (~60 words)
 - **Point:** Re-state the hypothesis for the current method, not the submitted one.
   - **Differs from progress report:** the submitted hypothesis routes *high-confidence* detections to a VLM for HPI classification. That is no longer the method (`objective_changes`, "O4's routing rule").
   - **Also consider splitting it.** The submitted version is double-barrelled (detection + fleet). Suggest a primary hypothesis (low-altitude onboard detection of persons *and* HPIs holds up under occlusion within the Orin's real-time budget) and a secondary one (a VLM / open-vocabulary stage adds value on low-confidence and never-seen HPI classes only if it beats cheap re-detection). Fleet coordination becomes a subordinate hypothesis or an objective only.
@@ -55,7 +69,7 @@ Project Summary (<300 words, not counted) is written last.
   - **Rubric hook:** "Research hypothesis … clearly stated and discussed in detail"; overview "Has a research hypothesis been stated that can be tested by the proposed work?"
   - **Make it falsifiable:** name the metric (mAP@50/recall per class, per occlusion bucket), the comparator (P-1 / P-2), and the budget (real-time on Orin Nano Super, 8 GB).
 
-### 3.2 Research Objectives (~170 words + table)
+### 3.2 Research Objectives (~130 words + table)
 - **Point:** Keep O1–O6 numbering for continuity with the submitted report; add one sentence saying the wording is retained except where noted.
 - O1 — occlusion degradation. **Scope note:** person detection only (HERIDAL is person-only; no HPI baseline to drop from). HPI degradation comes from the Weitefeld and bush sweeps and is reported separately, not compared against the person curve.
   - Measured as: P/R/mAP@50 at frozen occlusion buckets 0/10/20/40/60/80 % → degradation curve, not a single before/after number.
@@ -68,7 +82,7 @@ Project Summary (<300 words, not counted) is written last.
 - **Rubric hook:** "objectives should be clear, specific, and measurable" (template §3.3).
 - **Budget:** ~1 sentence each + table.
 
-### 3.3 Significance (~100 words)
+### 3.3 Significance (~80 words)
 - **Point:** Who benefits and how.
   - SAR operators: more usable search in vegetated terrain where current aerial detection is weakest `[cite:bozicstulic2019heridal]`, `[cite:nathan2026weitefeld]`. `[cite: SAR operational need / time-criticality of lost-person search]`
   - Engineering community: an occlusion-graded benchmark and an edge-deployment comparison under a fixed 8 GB budget.
@@ -84,7 +98,7 @@ Project Summary (<300 words, not counted) is written last.
 
 ---
 
-## 4. Project Process (rename: "Methodology and Methods") — ~1050 words (WRITE SECOND)
+## 4. Project Process (rename: "Methodology and Methods") — ~1000 words (WRITE SECOND)
 
 **Project type:** Design and Build (as declared in progress report). Template §4.3 (design constraints, criteria, tools) and §4.1 (apparatus, procedures, how parameters are computed) both apply.
 
@@ -92,13 +106,13 @@ Project Summary (<300 words, not counted) is written last.
 
 **Template requirement to hit:** "identify equipment or approaches that are already in place, and those that will be developed". Mark each sub-section with built / to build.
 
-### 4.1 Overview (~80 words + Figure)
+### 4.1 Overview (~75 words + Figure)
 - Point: three workstreams — detection/HPI pipeline (offline, then on-device), data (public datasets now, bush collection), fleet simulation.
 - Point: the Phase 3 comparisons run as an elimination tournament (~30–40 runs), not a grid (6 × 3 × 4 = 72 pipeline builds before the occlusion sweep multiplies it again).
 - **Figure:** simplified version of `COMPARISON_DEPENDENCY_FLOWCHART.drawio` (stages + gates). Own drawing — no citation issue.
 - Rubric hook: "capable of yielding … repeatable results".
 
-### 4.2 Datasets and split protocol (~200 words)
+### 4.2 Datasets and split protocol (~190 words)
 - HERIDAL: person-only, 45–60 m, open terrain; used for pipeline validation and the controlled O1 sweep `[cite:bozicstulic2019heridal]`. Status: built (tiled 1024 px, 0.2 overlap, split by source image).
 - Weitefeld: real forest occlusion, multi-class (shelter/object/person; `unknown` dropped, sensitivity check with/without), split by physical finding `[cite:nathan2026weitefeld]`. Status: built on 3 of 15 strips.
   - Caveats to state: ~300 m crewed aircraft; crowd-sourced labels; 14.7 % of person rows "excluded, not checked" → person metrics are a lower bound.
@@ -109,7 +123,7 @@ Project Summary (<300 words, not counted) is written last.
 - Ethics / regulatory: person-present sessions need ethics approval; object-only sessions do not. `[cite: CASA Part 101 / excluded-category RPA rules]` — template Process criterion names "relevant Australian and/or International Standards".
 - Rubric hook: "databases … relevant Australian and/or International Standards".
 
-### 4.3 Occlusion instrument (~130 words + example figure)
+### 4.3 Occlusion instrument (~125 words + example figure)
 - Point: occlusion fraction measured against **target bbox pixels**, achieved fraction logged per instance.
 - Point: four modes (cutout, blobs, texture, foliage); `texture` (vegetation sampled from the same image) is the reported mode — justify vs cutout (wrong texture) and foliage (needs asset library).
 - Point: frozen, seeded buckets on disk (seed 42) so every model sees byte-identical images. Status: tool built (`vision/occlusion/occlude.py`).
@@ -124,7 +138,7 @@ Project Summary (<300 words, not counted) is written last.
 - `[cite: cutout / copy-paste / synthetic occlusion augmentation]`, `[cite:pop_infrared2025]` for occluded-person detection context.
 - **Figure:** one image at 0 / 40 / 80 % texture occlusion rendered by the tool's verify output.
 
-### 4.4 Detector architecture sweep (~220 words + table)
+### 4.4 Detector architecture sweep (~210 words + table)
 - Point: admission rule — no architecture requiring custom CUDA kernels for training or export (why: must compile on x86, again on ARM64, then survive TensorRT export; each can fail outright).
 - **Table (arm → structural mechanism → why relevant to fragmented occluded evidence):**
   - YOLO11s — plain CNN, local convolution; Phase 1 continuity reference. `[cite: YOLO11 / Ultralytics]`
@@ -140,7 +154,7 @@ Project Summary (<300 words, not counted) is written last.
 - All from COCO-pretrained weights (D7 side experiment separate).
 - Rubric hook: "theoretical frameworks, … models, … techniques".
 
-### 4.5 Pipeline configurations and VLM evaluation (~170 words)
+### 4.5 Pipeline configurations and VLM evaluation (~160 words)
 - P-1 detector only (floor) → P-2 + A1 crop re-detection (~10–15 ms, the bar the VLM must clear) → P-3 + async VLM queue (≤2B params) → P-4 open-vocabulary D-arm as a parallel alternative.
 - Point: A1 benchmarked before any VLM work (fairness; avoids "baseline tuned to lose").
 - Point: VLM metric is candidate-clearance throughput and queue backlog at realistic flight speed, not per-frame latency.
@@ -149,13 +163,13 @@ Project Summary (<300 words, not counted) is written last.
 - Open-vocab candidates (YOLO-World / YOLOE / OWLv2 / Grounding DINO). `[cite: each]`
 - Held-out class evaluation with bootstrap CIs over placements.
 
-### 4.6 On-device evaluation and metrics (~130 words)
+### 4.6 On-device evaluation and metrics (~125 words)
 - Hardware: Jetson Orin Nano Super 8 GB, JetPack 6.2.x, MAXN SUPER, `jetson_clocks` (DVFS otherwise swings latency 20 %+), NVMe boot + 16 GB swap, `jtop` for power/memory, TensorRT export.
 - Metrics: per-class precision, recall, mAP@50, mAP@50-95; latency mean and p95 (model-only vs end-to-end, as in `[cite:sarwar2026benchmarking]`); power (W); memory; VLM throughput/backlog.
 - Repeatability: every run logged to `results/runs.csv`, one row per class per run, with git SHA, dataset version, provenance filter, occlusion mode/fraction, device. Pinned environment (torch 2.11.0+cu128, Ultralytics 8.4.138, `uv.lock`).
 - Rubric hook: "computational and statistical tools … metrics to be used for evaluating project outcomes"; "repeatable".
 
-### 4.7 Fleet coordination in simulation (~60 words)
+### 4.7 Fleet coordination in simulation (~55 words)
 - PX4 SITL + Gazebo Harmonic + ROS2 via uXRCE-DDS; multi-drone world already running (resolve Jazzy/Humble first).
 - Coordination tested against mocked detection messages first; `detection_type` field distinguishes person (converge) from HPI (reprioritise area).
 - Metrics: time-to-full-coverage, redundant re-searched area, collaborative vs independent. `[cite: multi-UAV coverage / cooperative search]`
@@ -167,11 +181,11 @@ Project Summary (<300 words, not counted) is written last.
 
 ---
 
-## 6. Progress to Date — ~800 words (WRITE THIRD)
+## 6. Progress to Date — ~500 words (WRITE THIRD)
 
 **Exemplar moves:** one line "on schedule against the Gantt" → completed tasks → a validated-parameters table → a figure of real output. Ours can go further: the rubric's top band wants *critical analysis* of results, and there are real results to analyse.
 
-### 6.1 Status against timeline (~100 words)
+### 6.1 Status against timeline (~50 words)
 - Point: Phase 0 and most of Phase 1 complete; name what's done vs outstanding with dates from git log:
   - 2026-09-03 training environment built (P0.4)
   - 2026-09-05/06 HERIDAL and Weitefeld acquired (checksums verified) and converted
@@ -181,7 +195,7 @@ Project Summary (<300 words, not counted) is written last.
 - Outstanding in Phase 1: test-set evaluation (P1.4 eval harness), controlled occlusion sweeps (P1.6), TensorRT/on-device baseline (P1.7).
 - Rubric hook: "Refer to your timeline to identify tasks completed and work remaining" (template §6).
 
-### 6.2 Data pipeline validation (~150 words)
+### 6.2 Data pipeline validation (~70 words)
 - Point: overfit gates as a trust gate before any reported training — a pipeline must memorise 20 tiles to mAP@50 > 0.95. Don't call these results.
 - **Critical-insight point:** Weitefeld gate 1 exposed a box-origin convention bug (paper describes a "lower-left corner" without stating y direction). Invisible on large shelter boxes, obvious on small person boxes → caught only by rendering small targets. Fixed with `--box-origin bottomedge`, verified by hand against a raw row. Lesson: coordinate bugs don't show in aggregate metrics.
 - **Critical-insight point:** gate 2 zero result diagnosed as an undertrained model (uniform floor-confidence grid when rendered at near-zero threshold), not a geometry bug → re-sampled per class, 300 epochs → all three classes converged (mAP@50 0.861 overall).
@@ -189,7 +203,7 @@ Project Summary (<300 words, not counted) is written last.
 - Point: split-by-unit protocol (source image / physical finding) prevents near-duplicate leakage.
 - Rubric hook: "Risks are being proactively managed"; "discussed with critical analysis".
 
-### 6.3 Baseline results (~300 words + table)
+### 6.3 Baseline results (~220 words + table)
 - **Table:** run | dataset | split | class | P | R | mAP@50 | mAP@50-95 (from `results/runs.csv`; yolo11s, 150 epochs, imgsz 1024, batch 8, RTX 4070).
   - Baseline A, HERIDAL, val: person P 0.922, R 0.900, mAP@50 0.954, mAP@50-95 0.641.
   - Baseline B, Weitefeld 3-class, val: person 0.705 / 0.226 / 0.331 / 0.114; object 0.090 / 0.123 / 0.019 / 0.005; shelter 0.000 / 0.000 / 0.0001 / 0.00001.
@@ -203,7 +217,7 @@ Project Summary (<300 words, not counted) is written last.
   - Point: the result supports the low-altitude premise (pixels-on-target), not proves it — keep the claim to "consistent with".
 - Rubric hook: "Preliminary results are high quality and discussed in detail with critical analysis".
 
-### 6.4 Changes since the progress report and risks that eventuated (~200 words)
+### 6.4 Changes since the progress report and risks that eventuated (~100 words)
 - Scope: VOC transferred to another student.
 - Weitefeld added (why: multi-class validation, de-risks ethics/collection on the critical path, published failure baseline).
 - Datasets kept separate (D6), reversing the combined-dataset plan.
@@ -212,40 +226,44 @@ Project Summary (<300 words, not counted) is written last.
 - Risks that eventuated and how handled: box-origin ambiguity (render-verify); label noise (lower-bound reporting); PyTorch `cu121` index removal (moved to `cu128`); Jetson price increase (within budget).
 - Rubric hook: "Discuss any risks that have eventuated and your actions to manage them. Also describe any changes to the timeline." (template §6)
 
-### 6.5 Next steps (~50 words)
+### 6.5 Next steps (~60 words)
 - Test-set eval harness → controlled occlusion sweeps on HERIDAL and Weitefeld → TensorRT on Orin → HPI taxonomy lock + object-only bush collection.
 
 ---
 
-## 2. Literature Review — ~900 words (WRITE FOURTH)
+## 2. Literature Review — ~1800 words (WRITE FOURTH)
 
 **Exemplar moves:** opens with a short framing paragraph that states the problem the review converges on → thematic sub-sections, each ending with what it means for *this* project → a critical table mapping each design choice to supporting literature, opposing literature, and the rebuttal. That last table is the clearest "critical analysis" signal in the exemplar; reuse the *move*, not the content.
 
-**Budget reality:** 900 words over six themes ≈ 150 each. The exemplar's LR is far longer. Prioritise critical comparison over description; one strong source per claim.
+**Budget reality (revised 2026-09-16):** ~1800 words over seven themes, matching
+the exemplar's own LR weight (it ran ~2000+ words, over half its 3978-word
+total). Still prioritise critical comparison over description, but there's now
+room for the per-arm evidence table and fuller treatment of 2.4 without
+starving the other themes.
 
-**Framing paragraph (~60 words):** detection in open terrain is largely solved at altitude; forest occlusion is not; onboard constraints narrow what can be deployed.
+**Framing paragraph (~110 words):** detection in open terrain is largely solved at altitude; forest occlusion is not; onboard constraints narrow what can be deployed.
 
-### 2.1 Aerial person detection for SAR (~170 words)
+### 2.1 Aerial person detection for SAR (~320 words)
 - History: two-stage detectors (Faster R-CNN) `[cite:ren2017fasterrcnn]` → HERIDAL-era SAR pipelines `[cite:bozicstulic2019heridal]` → single-stage YOLO dominance for real-time `[cite:yolo_sar_drones2025]`, `[cite:botea2026lostperson]`.
 - State of the art / taxonomy: survey's four method groups (scale/perspective-aware, sample-oriented sparse, information fusion, lightweight on-device) `[cite:zhang2025aerialsurvey]`.
 - **Critical point:** reported accuracies come from open terrain at 45–60 m or from visible subjects; they don't transfer to canopy. Speed figures are hardware-dependent (Faster R-CNN 5–17 fps on workstation `[cite:ren2017fasterrcnn]`; YOLO ~2 fps on Jetson Nano without TensorRT `[cite:yolo_sar_drones2025]`).
 - **Critical point:** Botea et al. use YOLO11n/s but evaluate on a custom set and video; mAP@50-95 weak → localisation, not recognition, is the gap `[cite:botea2026lostperson]`.
 - Relevance: justifies YOLO11s as continuity reference and the need for on-device numbers alongside mAP.
 
-### 2.2 Occlusion and vegetation (~150 words)
+### 2.2 Occlusion and vegetation (~280 words)
 - Occluded-person datasets and why standard pedestrian-trained detectors fail on partially occluded, non-standing subjects `[cite:pop_infrared2025]`.
 - RGB-thermal fusion as the sensor-side answer to foliage `[cite:gui2026seeing]`. **Critical:** strong result but needs a second, costlier sensor and aligned data; scoped out on cost. This thesis asks how far RGB goes first.
 - Synthetic occlusion as an evaluation instrument. `[cite: synthetic occlusion / cutout-style augmentation]`. **Critical:** synthetic occluders risk shortcut learning and don't reproduce real canopy — hence distractors and a real-occlusion cross-check.
 - Relevance: motivates graded sweep + full-box label policy.
 
-### 2.3 Real forest SAR data: Weitefeld (~130 words)
+### 2.3 Real forest SAR data: Weitefeld (~240 words)
 - What it is: real search operation, 10,659 images, 34,424 boxes, 405 findings, 4 classes, real canopy `[cite:nathan2026weitefeld]`.
 - **Critical point (published failure):** YOLOv12 effectively fails; authors attribute it to too few pixels on occluded clues at ~300 m / 3–5 cm per pixel.
 - **Critical point (limitations):** crewed aircraft, not UAV; coarse classes; crowd-sourced subjective labels; `unknown` class semantically messy; person-label noise found in this project.
 - **Novelty differentiator:** low altitude, onboard real-time, finer HPI taxonomy, open-vocab/VLM arms, multi-drone — none addressed there.
 - Relevance: independent evidence for the low-altitude premise and the multi-class validation set.
 
-### 2.4 Detector architectures for occluded small targets (~200 words)
+### 2.4 Detector architectures for occluded small targets (~380 words)
 - Group, don't list: local convolution (YOLO11) → edge-simplified CNN (YOLO26) → attention within CNN (YOLOv12) → high-order/global correlation (YOLOv13) → full transformers (RF-DETR, D-FINE). `[cite: each arm's originating paper/report]` — **all currently missing**.
 - **Critical point per group, one clause each:** what mechanism might help reconnect fragmented visible evidence; what it costs (latency, export risk, data hunger of transformers on small datasets).
 - State-space lineage as its own paragraph: Mamba for sequences `[cite: Mamba, Gu & Dao]` → Vision Mamba, bidirectional scan `[cite:zhu2024visionmamba]` → VMamba SS2D four-way scan, linear complexity `[cite:liu2024vmamba]` → MambaNeXt-YOLO detection hybrid `[cite:mambanextyolo2025]`.
@@ -253,30 +271,35 @@ Project Summary (<300 words, not counted) is written last.
 - **Recommended table (exemplar's critical move):** arm → supporting evidence → weakness/opposing evidence → why still included / excluded.
 - Relevance: justifies the six arms spanning distinct mechanisms rather than YOLO versions.
 
-### 2.5 Open-vocabulary detection (~90 words)
+### 2.5 Open-vocabulary detection (~170 words)
 - Text-prompted detectors (YOLO-World, OWLv2, Grounding DINO, YOLOE) `[cite: each]`.
 - **Critical point:** one forward pass, no generation → sits between closed-set detectors and VLMs on latency; unknown robustness on tiny aerial objects `[cite: open-vocab on aerial/small objects]`.
 - Relevance: the D-arm and the most likely displacer of the VLM on held-out classes.
 
-### 2.6 Onboard vision-language models (~100 words)
+### 2.6 Onboard vision-language models (~190 words)
 - Small VLM design for mobile hardware `[cite:chu2024mobilevlmv2]`; local VLM benchmarking on edge hardware, model vs end-to-end latency `[cite:sarwar2026benchmarking]`.
 - Aerial VLA precedent: onboard VLA on drones `[cite:chen2025gradnavpp]`; dual-rate scheduling on Jetson AGX Orin, pre-fill dominates latency `[cite:williams2026litevlah]`.
 - **Critical point:** these run on larger Orin modules (AGX) or target navigation/guidance, not detection verification; prefill-dominated latency supports the async-queue design and throughput metric instead of per-frame latency.
 - **Critical point:** a VLM re-labelling what a trained detector already labelled adds latency for no information → VLM role confined to low-confidence verification and unseen classes.
 - Relevance: justifies ≤2B cap, async design, and the "must beat A1" criterion.
 
-### 2.7 Research gap (~60 words, or end of 2.6)
+### 2.7 Research gap (~110 words, or end of 2.6)
 - One tight synthesis: no study combines low-altitude onboard detection, graded occlusion, a fine HPI taxonomy, and a fair cheap-baseline test of VLM/open-vocab arms under an 8 GB edge budget. Leads straight into §3.
 
 **Omitted theme to decide on:** multi-drone coordination (O6) has no literature coverage at all. Either one short paragraph with 1–2 sources, or state O6 as secondary and cover it only in Process. `[cite: multi-UAV cooperative search / coverage]`
 
 ---
 
-## 5. Timeline and Risk Management — ~500 words (WRITE FIFTH)
+## 5. Timeline and Risk Management — ~230 words (WRITE FIFTH)
 
 **Exemplar moves:** one paragraph pointing to the Gantt appendix and naming the critical path as a dependency chain → one sentence on schedule status → risk register table; explicitly states "no significant environmental risk".
 
-### 5.1 Timeline (~220 words + Gantt in appendix)
+**Budget reality (revised 2026-09-16):** cut hardest of any section (500→230)
+to fund the LR/Process increase — defensible since it's the lowest-weighted
+criterion (/15) and the Gantt chart itself (not word-counted) carries most of
+the timeline content; the risk register table does most of §5.2's work too.
+
+### 5.1 Timeline (~100 words + Gantt in appendix)
 - Point: Gantt in Appendix, updated from the progress report version (phases 0–7 mapped to Sem 1 remainder + Sem 2 weeks, with milestones).
 - Milestones: Proposal; Phase 1 complete (sweeps + on-device baseline); HPI taxonomy locked; ethics decision; Gate 0 (bush data usable); Gates 1–4; VLM decision; final thesis submission. `[gap: unit milestone dates for Sem 2]`
 - **Critical path (changed since progress report — say so):**
@@ -287,7 +310,7 @@ Project Summary (<300 words, not counted) is written last.
 - **Time justification (rubric HD wants "reasonable and justified"):** run budget ~30–40 runs; baseline run cost from the Phase 1 logs (150 epochs, 1024 px on RTX 4070) × runs → hours; Kaya for parallelism. `[gap: wall-clock hours per baseline run]`
 - Slack / descoping order: Phase 7 → Phase 6 → Phase 5 → A2b stretch. Phase 6 can start early on mocked detections.
 
-### 5.2 Risk management (~280 words incl. table)
+### 5.2 Risk management (~130 words incl. table)
 Columns: risk | type | likelihood | consequence | mitigation. Only real risks — the template warns you can lose marks for padding.
 
 - **Safety — UAV flight at 5–10 m near people/volunteers.** Medium consequence. Mitigation: CASA RPA operating rules `[cite: CASA]`, landholder permission, object-only sessions don't involve people, standard pre-flight procedure.
@@ -305,14 +328,18 @@ Columns: risk | type | likelihood | consequence | mitigation. Only real risks �
 
 ---
 
-## 1. Introduction — ~300 words (WRITE SIXTH)
+## 1. Introduction — ~200 words (WRITE SIXTH)
 
 **Exemplar moves:** open with the operational problem → quantified prior result (with a number) → the failure/limitation → root cause → one paragraph on what this thesis does. No lit-review depth here.
 
-- **P1 — the problem (~90 words):** lost-person SAR in vegetated terrain is time-critical and searcher-intensive; aerial imagery helps in open ground but canopy hides people and their traces. `[cite: SAR time-criticality / lost person survival]` `[cite:zhang2025aerialsurvey]`
+**Budget reality (revised 2026-09-16):** cut from 300→200 to help fund the LR
+increase. Tightest of the three P1/P2/P3 beats, not a dropped one — the rubric
+still wants problem, evidence, and project framing all present.
+
+- **P1 — the problem (~60 words):** lost-person SAR in vegetated terrain is time-critical and searcher-intensive; aerial imagery helps in open ground but canopy hides people and their traces. `[cite: SAR time-criticality / lost person survival]` `[cite:zhang2025aerialsurvey]`
   - Stakeholders (template §3.1 asks for implications for interested parties): SAR agencies/police/SES, volunteer searchers, missing persons. `[cite: Australian SAR context, optional]`
-- **P2 — what works and what doesn't (~110 words):** HERIDAL-lineage systems perform well on open terrain at 45–60 m (88.9 % detection rate) `[cite:bozicstulic2019heridal]`; on real forest imagery at ~300 m a modern YOLO effectively fails `[cite:nathan2026weitefeld]`; detectors trained on unoccluded data degrade on occluded subjects `[cite:pop_infrared2025]`. Root-cause framing: pixels-on-target and fragmented visible evidence, under an onboard compute limit.
-- **P3 — this project (~100 words):** low-altitude (5–10 m) onboard pipeline on Jetson Orin Nano Super; persons plus human-presence indicators as the primary contribution; graded occlusion evaluation; fair test of VLM and open-vocabulary stages against cheap re-detection; multi-drone coordination in simulation. One sentence on individual contribution within the team.
+- **P2 — what works and what doesn't (~80 words):** HERIDAL-lineage systems perform well on open terrain at 45–60 m (88.9 % detection rate) `[cite:bozicstulic2019heridal]`; on real forest imagery at ~300 m a modern YOLO effectively fails `[cite:nathan2026weitefeld]`; detectors trained on unoccluded data degrade on occluded subjects `[cite:pop_infrared2025]`. Root-cause framing: pixels-on-target and fragmented visible evidence, under an onboard compute limit.
+- **P3 — this project (~60 words):** low-altitude (5–10 m) onboard pipeline on Jetson Orin Nano Super; persons plus human-presence indicators as the primary contribution; graded occlusion evaluation; fair test of VLM and open-vocabulary stages against cheap re-detection; multi-drone coordination in simulation. One sentence on individual contribution within the team.
 - Optional closing sentence on report structure (template says not required).
 - Rubric hook: "sufficient background for the reader to understand the context of the project, the problem statement/hypothesis".
 

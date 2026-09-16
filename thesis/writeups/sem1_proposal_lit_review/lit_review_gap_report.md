@@ -17,7 +17,7 @@
 |---|---|---|
 | 1. SAR aerial person detection lineage | **Ready to write** | No |
 | 2. Occlusion and vegetation | Writable, one thin spot | No |
-| 3. Weitefeld failure baseline | Citation fine, **local PDF unreadable** | Yes — fix before quoting numbers |
+| 3. Weitefeld failure baseline | **Ready to write** — publisher PDF now in, all numbers verified | No |
 | 4. Detector architecture sweep (six arms) | **Not ready** — 5 of 6 unsourced | Yes |
 | 5. State-space lineage + exclusion | Partial, **exclusion framing contradicted by own paper** | Yes — framing |
 | 6. Open-vocabulary detectors | **Not ready** — zero sources | Yes |
@@ -56,14 +56,17 @@ occluded subjects". The paper does show exactly that — but in **thermal/infrar
 (POP dataset, YOLOv8s). Your project is RGB. Keep it (it's the right finding), but either say
 "in thermal imagery" when citing, or pair it with an RGB occlusion source.
 
-### C. Weitefeld PDF has no text layer
-`Weitefeld Dataset Paper.pdf` is a browser print — ~1,700 extractable characters total.
-Every number the proposal leans on (10,659 images, 34,424 boxes, 405 findings, ~300 m,
-3–5 cm/px, YOLOv12 at 0.016% average / 2.6% max confidence, 160 volunteers) currently comes
-from project docs, not from a readable copy of the source. The bib entry is correct (DOI
-verified via `data/raw/weitefeld/PROVENANCE.md`). **Fix:** download the publisher PDF from
-Scientific Data (open access, doi:10.1038/s41597-026-07101-w) and re-check the numbers before
-they go into prose.
+### C. Weitefeld PDF — RESOLVED 2026-09-16
+`weitefeld dataset.pdf` (the proper Scientific Data publisher copy) is now in `papers/`,
+replacing the unreadable browser-print version. Every number the proposal leans on —
+10,659 images, 34,424 anomaly labels, 405 findings, ~300 m altitude, 3–5 cm/px GSD, YOLOv12
+at 0.016% average / 2.6% max confidence, 160 volunteers — verified word-for-word against the
+extracted text. Safe to quote directly now.
+
+**Watch for:** the paper describes two flight passes. An initial broad scan (25 km², 30,454
+images, ~4×4 cm/px) is a *different* pass from the crowd-sourced priority zone (10,659 images,
+3–5 cm/px GSD, 405 findings) that all the dataset numbers above come from. Don't conflate the
+two — cite only the priority-zone figures.
 
 ---
 
@@ -109,11 +112,11 @@ they go into prose.
   more than the LR, but the LR's "synthetic occlusion as an evaluation instrument" point needs it.
 - **An RGB occluded-person detection source** — to pair with (or replace) `pop_infrared2025`.
 
-### 3. Weitefeld failure baseline — CITATION FINE, SOURCE UNREADABLE
+### 3. Weitefeld failure baseline — READY
 
 **Solid (bib)** — `nathan2026weitefeld`, DOI verified.
-**Thin (verification)** — see finding C. Treat all quoted numbers as unverified until the
-publisher PDF is in `papers/`.
+**Solid (verification)** — see finding C. Publisher PDF now in `papers/`, all quoted numbers
+checked against the source text.
 
 Positioning is well supported by project docs and doesn't need new sources: ~300 m crewed
 aircraft vs 5–10 m UAV; 4 coarse classes vs fine HPI taxonomy; crowd-sourced subjective labels
@@ -279,7 +282,7 @@ standards citations, not academic papers. Low priority for the LR pass.
 
 ## Suggested `/find-refs` order
 
-1. **Weitefeld publisher PDF** (5 min, unblocks theme 3)
+1. ~~Weitefeld publisher PDF~~ — done 2026-09-16, theme 3 unblocked.
 2. **Mamba (Gu & Dao)** (unblocks theme 5 and fixes finding A's sourcing)
 3. **Six-arm sources:** YOLO26, YOLOv12, YOLOv13, RF-DETR, RF100-VL, D-FINE, + YOLO11 citation form
 4. **Open-vocab:** YOLO-World, Grounding DINO, OWLv2, YOLOE (settle which you'll name)
@@ -288,4 +291,4 @@ standards citations, not academic papers. Low priority for the LR pass.
 7. **O6 scope call**, then 1–2 multi-UAV sources if keeping it in the LR
 8. CASA regulation (for Process)
 
-Items 1–5 are required for the proposal LR. 6 strengthens it. 7–8 depend on scope/section.
+Items 2–5 are required for the proposal LR. 6 strengthens it. 7–8 depend on scope/section.
