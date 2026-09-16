@@ -202,6 +202,8 @@ re-detection). Say that, don't imply the deployment pattern is new.
 | SmolVLM2 | `technical_work_timeline.md` Phase 4 | chain from Sarwar's refs |
 | Qwen2-VL-2B | same | |
 | Moondream2 | same | may only have a model card/GitHub, no paper — `/find-refs` to decide |
+| Florence-2 | added 2026-09-16, `temp_papers/florence2_2311.06242.pdf` | CVPR 2024, 232M/771M params. Detection/grounding-native (unified prompt interface for captioning/detection/grounding), unlike the chat-repurposed VLMs above — a genuinely different design point worth naming in the critical comparison |
+| InternVL2.5-1B/2B | added 2026-09-16, `temp_papers/internvl25_2412.05271.pdf` | arXiv 2412.05271, preprint only (no venue found). 1B/2B checkpoints part of this family paper's release |
 
 **Missing — optional**
 - LoRA — Phase 4 VLM fine-tuning (P3.3 says LoRA stays in scope there). Process/final thesis,
@@ -286,7 +288,7 @@ standards citations, not academic papers. Low priority for the LR pass.
 2. **Mamba (Gu & Dao)** (unblocks theme 5 and fixes finding A's sourcing)
 3. **Six-arm sources:** YOLO26, YOLOv12, YOLOv13, RF-DETR, RF100-VL, D-FINE, + YOLO11 citation form
 4. **Open-vocab:** YOLO-World, Grounding DINO, OWLv2, YOLOE (settle which you'll name)
-5. **VLM candidates:** SmolVLM2, Qwen2-VL, Moondream2 (chain from Sarwar's reference list)
+5. **VLM candidates:** SmolVLM2, Qwen2-VL, Moondream2 (chain from Sarwar's reference list), plus Florence-2 and InternVL2.5-1B/2B (sourced 2026-09-16, in `temp_papers/`)
 6. **One RGB occlusion source** + **one occlusion-augmentation source**
 7. **O6 scope call**, then 1–2 multi-UAV sources if keeping it in the LR
 8. CASA regulation (for Process)

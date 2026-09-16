@@ -159,7 +159,7 @@ carrying marks vs which are padding.
 - Point: A1 benchmarked before any VLM work (fairness; avoids "baseline tuned to lose").
 - Point: VLM metric is candidate-clearance throughput and queue backlog at realistic flight speed, not per-frame latency.
 - Point: pre-registered criteria (quote the decision table): A1 adopted if it recovers recall within budget; VLM adopted only if it beats P-2 on held-out classes *and* verification with bounded backlog; D-arm displaces VLM if it matches it at one-forward-pass cost.
-- Candidate VLMs (SmolVLM2, Qwen2-VL-2B, Moondream2) and runtime (llama.cpp / Ollama). `[cite: each VLM]`; edge VLM benchmarking method `[cite:sarwar2026benchmarking]`; small-VLM design `[cite:chu2024mobilevlmv2]`.
+- Candidate VLMs (SmolVLM2, Qwen2-VL-2B, Moondream2, Florence-2, InternVL2.5-1B/2B) and runtime (llama.cpp / Ollama). `[cite: each VLM]`; edge VLM benchmarking method `[cite:sarwar2026benchmarking]`; small-VLM design `[cite:chu2024mobilevlmv2]`.
 - Open-vocab candidates (YOLO-World / YOLOE / OWLv2 / Grounding DINO). `[cite: each]`
 - Held-out class evaluation with bootstrap CIs over placements.
 
@@ -351,7 +351,10 @@ still wants problem, evidence, and project framing all present.
 1. YOLO11 / Ultralytics, YOLO26, YOLOv12, YOLOv13, RF-DETR (+ RF100-VL), D-FINE — no keys.
 2. Mamba (Gu & Dao) — the root of the state-space lineage paragraph.
 3. Open-vocabulary detectors: YOLO-World, OWLv2, Grounding DINO, YOLOE.
-4. The actual candidate VLMs: SmolVLM2, Qwen2-VL, Moondream2. (MobileVLM V2 is in the bib but isn't a candidate — use it for design context only.)
+4. The actual candidate VLMs: SmolVLM2, Qwen2-VL, Moondream2, Florence-2,
+   InternVL2.5-1B/2B. (MobileVLM V2 is in the bib but isn't a candidate — use it
+   for design context only.) Florence-2 and InternVL2.5 sourced 2026-09-16, in
+   `temp_papers/` pending vetting.
 5. Multi-UAV cooperative search / coverage (O6) — zero sources.
 6. Synthetic occlusion / cutout augmentation.
 7. SAR operational context (time-criticality, lost-person behaviour / clue finding).

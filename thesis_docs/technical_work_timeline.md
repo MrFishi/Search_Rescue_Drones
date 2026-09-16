@@ -73,7 +73,11 @@ Depends on the Phase 2 dataset (at least a usable first batch) and the Phase 1 p
 
 Depends on Phase 3's A1 baseline and best detector already existing. There's nothing to compare a VLM against otherwise.
 
-**Setup.** Pick 2-3 VLMs under 2B parameters (SmolVLM2, Qwen2-VL-2B, Moondream2) and get them running on-device via llama.cpp or Ollama.
+**Setup.** Pick 2-3 VLMs under 2B parameters (SmolVLM2, Qwen2-VL-2B, Moondream2,
+Florence-2, InternVL2.5-1B/2B) and get them running on-device via llama.cpp or
+Ollama. Florence-2 and InternVL2.5 added 2026-09-16 as candidates with actual
+papers behind them (Moondream2 has none); Florence-2 is detection/grounding-native
+rather than a general chat VLM, which may suit the verification role better.
 
 **Async pipeline.** Detector runs synchronously at frame rate as normal. A separate VLM worker consumes low-confidence crops off a queue at whatever throughput the hardware can sustain, which will likely be well under frame rate. This reframes the relevant VLM metric from "added latency per frame" to candidate-clearance throughput and queue backlog at a given flight speed, which is a fairer and more operationally honest way to report the cost than a raw per-frame tax.
 
