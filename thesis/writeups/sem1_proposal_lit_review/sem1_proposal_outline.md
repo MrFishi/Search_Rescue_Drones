@@ -51,7 +51,7 @@ carrying marks vs which are padding.
 **Global cautions:**
 - Tables are counted by Turnitin and probably by the marker. The exemplar leans on tables. Use them where they replace prose, not on top of it.
 - **Stale doc warning:** `thesis_docs/technical_work_timeline.md` still says "combined dataset" and "Mamba-hybrid" in Phases 2–3. Both are superseded (D6; Mamba scrapped). Don't write from that file on those points — use the flowchart and `objective_changes`.
-- **Doc inconsistency to resolve before writing Process:** `simulation/sim_setup.README.md` says the sim runs ROS2 **Jazzy** / Ubuntu 24.04. `dev_notes.md` says JetPack 6.2 is chosen partly because Ubuntu 22.04 "keeps ROS2 **Humble** aligned with the sim stack". One of those is wrong.
+- **Resolved:** sim stack (dev machine) runs ROS2 Jazzy / Ubuntu 24.04; the Jetson runs ROS2 Humble / Ubuntu 22.04, forced by the AR0822 camera driver's L4T support — two separate ROS2 environments by design, not a contradiction. `dev_notes.md` wording fixed accordingly.
 - Scope guards: no VOC; datasets never combined (D6); no `tiny/` gate run described as a result; YOLOv12 = area attention, YOLOv13 = hypergraph correlation, YOLO26 is not transformer-based.
 - 3rd person, impersonal (template §2.6.1).
 
@@ -170,7 +170,7 @@ carrying marks vs which are padding.
 - Rubric hook: "computational and statistical tools … metrics to be used for evaluating project outcomes"; "repeatable".
 
 ### 4.7 Fleet coordination in simulation (~55 words)
-- PX4 SITL + Gazebo Harmonic + ROS2 via uXRCE-DDS; multi-drone world already running (resolve Jazzy/Humble first).
+- PX4 SITL + Gazebo Harmonic + ROS2 via uXRCE-DDS; single-drone sim (PX4/Gazebo/DDS bridge, custom terrain) already running. Multi-drone/swarm coordination is not yet built (`swarm/` is an empty package stub) — Phase 6 work, not a current result. Sim runs ROS2 Jazzy on the dev machine; the Jetson runs ROS2 Humble (forced by the AR0822 camera driver) — deliberate split, not a bug to resolve.
 - Coordination tested against mocked detection messages first; `detection_type` field distinguishes person (converge) from HPI (reprioritise area).
 - Metrics: time-to-full-coverage, redundant re-searched area, collaborative vs independent. `[cite: multi-UAV coverage / cooperative search]`
 
@@ -191,7 +191,7 @@ carrying marks vs which are padding.
   - 2026-09-05/06 HERIDAL and Weitefeld acquired (checksums verified) and converted
   - 2026-09-06/07 overfit gates passed; Baselines A and B trained and logged (2026-09-07)
   - Occlusion tool built (`occlude.py`)
-  - Sim stack operational with multi-drone support (claimed in progress report)
+  - Sim stack operational — single-drone only (PX4 SITL + Gazebo Harmonic + ROS2 Jazzy bridge, custom real-world terrain). Multi-drone support was claimed in the progress report but does not exist yet (`swarm/` package is an empty stub) — do not repeat that claim.
 - Outstanding in Phase 1: test-set evaluation (P1.4 eval harness), controlled occlusion sweeps (P1.6), TensorRT/on-device baseline (P1.7).
 - Rubric hook: "Refer to your timeline to identify tasks completed and work remaining" (template §6).
 
@@ -370,7 +370,7 @@ still wants problem, evidence, and project framing all present.
 - Test-set evaluation for Baselines A/B (runs.csv says "test-set eval pending").
 - Baseline B per-class instance counts (needed to interpret shelter ≈ 0).
 - Wall-clock training time per baseline run (for timeline justification).
-- Sim stack: ROS2 Jazzy vs Humble contradiction; multi-drone support confirmed?
+- ~~Sim stack: ROS2 Jazzy vs Humble contradiction~~ — resolved, deliberate split (see §4.7). Multi-drone support confirmed NOT built yet — swarm package is an empty stub.
 - Semester 2 milestone dates for the Gantt.
 - Bush collection: any sessions or site recon done yet?
 - Raw data / checkpoint backup location.

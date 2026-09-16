@@ -309,7 +309,7 @@ The companion computer. **Inference and benchmarking only — never train on it.
 
 | Step | Command / note |
 |---|---|
-| JetPack version | **6.2.x**, not 7.2.1 — Super mode is available from 6.2, Ubuntu 22.04 keeps ROS2 Humble aligned with the sim stack, and the Phase 4 edge-AI ecosystem is validated against JP6 |
+| JetPack version | **6.2.x**, not 7.2.1 — Super mode is available from 6.2, Ubuntu 22.04 gives ROS2 Humble on the Jetson (decoupled from the ROS2 Jazzy / Ubuntu 24.04 sim stack on the dev machine — the split is required by the AR0822 driver's L4T dependency, not a version mismatch to fix), and the Phase 4 edge-AI ecosystem is validated against JP6 |
 | **Check first** | Confirm the Arducam AR0822 driver supports your chosen JetPack. These drivers are locked to specific L4T releases and lag new JetPack by months. This may decide the version for you. |
 | Module selection | **P3767-0005** ("8GB developer kit version"). Selecting P3767-0003 gives a mismatched BSP that underperforms silently. |
 | Boot | NVMe SSD, not SD card. SD is too slow for model loading and VLM swap. |
@@ -365,7 +365,8 @@ Record after the P0.7 sim smoke test and the P0.8 Jetson bring-up. Reproducibili
 |---|---|---|
 | PX4-Autopilot | `<git SHA>` | |
 | Gazebo | Harmonic `<version>` | |
-| ROS2 distro | Humble | |
+| ROS2 distro (sim stack, dev machine) | Jazzy, Ubuntu 24.04 | |
+| ROS2 distro (Jetson) | Humble, Ubuntu 22.04 (forced by AR0822 driver/L4T support) | |
 | uXRCE-DDS Agent | `<version>` | |
 | JetPack / L4T | JetPack 6.2.2, `-super` device tree | 2026-09-15 |
 | Arducam driver | `<version>` — read off the running Jetson, not yet recorded | |
