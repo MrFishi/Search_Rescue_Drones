@@ -5,7 +5,7 @@ session_id: 3f5bf045-5b04-47dc-bfa7-e9a0c4e0d727
 machine: Vivobook
 created: 2026-09-17 15:52 AWST
 repo_ref: main @ cd94395
-status: open
+status: superseded
 supersedes: 2026-09-16_1838_lit-review-and-gap-report.md
 ---
 
