@@ -27,17 +27,25 @@ pastes identical occluders at random background locations. Always use it when
 generating training data.
 
 Usage:
-    # frozen eval buckets
+    # frozen eval buckets — --verify renders the first N images with the
+    # original boxes drawn on top so a coordinate bug is visible by eye before
+    # the bucket is trusted (see CLAUDE.md's converter --verify convention)
     for f in 0 10 20 40 60 80; do
       python occlude.py --in data/processed/heridal_yolo_v1/test \
         --out data/occluded/heridal_occ_v1/frac_$f \
-        --frac 0.$f --mode texture --seed 42
+        --frac 0.$f --mode texture --seed 42 --verify 10
     done
 
     # training augmentation, with background distractors
     python occlude.py --in .../train --out .../train_occ \
         --frac 0.35 --frac-jitter 0.2 --mode texture \
-        --distractor-rate 1.0 --seed 42
+        --distractor-rate 1.0 --seed 42 --verify 10
+
+--verify writes <out>/verify/<stem>_verify.jpg for the first N images, and the
+run summary also reports how often texture mode fell back to a flat fill
+(no clean non-target patch nearby) and how many distractors were actually
+placed vs attempted (some are skipped for overlapping a real target) — both
+logged in occlusion_meta.json too.
 """
 
 from __future__ import annotations
@@ -139,7 +147,8 @@ def feather(mask: np.ndarray, px: int = 3) -> np.ndarray:
     return np.clip(cv2.GaussianBlur(mask, (k, k), 0), 0, 1)
 
 
-def apply_occlusion(img, x1, y1, x2, y2, frac, mode, rng, boxes, foliage=None):
+def apply_occlusion(img, x1, y1, x2, y2, frac, mode, rng, boxes, foliage=None,
+                    stats=None):
     """Occlude the region in place. Returns achieved coverage fraction."""
     x1, y1 = max(int(x1), 0), max(int(y1), 0)
     x2, y2 = min(int(x2), img.shape[1]), min(int(y2), img.shape[0])
@@ -165,6 +174,8 @@ def apply_occlusion(img, x1, y1, x2, y2, frac, mode, rng, boxes, foliage=None):
         if patch is None:
             patch = np.zeros((h, w, 3), np.uint8)
             patch[:] = (50, 75, 45)
+            if stats is not None:
+                stats["texture_fallback"] += 1
         fill = patch
 
     elif mode == "foliage":
@@ -211,6 +222,10 @@ def run(args):
         raise SystemExit(f"No images under {src / 'images'}")
 
     log, n_inst = [], 0
+    stats = {"texture_fallback": 0, "distractor_attempted": 0, "distractor_placed": 0}
+    verify_dir = dst / "verify"
+    if args.verify > 0:
+        verify_dir.mkdir(exist_ok=True)
 
     for i, img_p in enumerate(images, 1):
         img = cv2.imread(str(img_p))
@@ -236,7 +251,7 @@ def run(args):
             if args.frac_jitter > 0:
                 f = float(np.clip(rng.normal(f, args.frac_jitter * f), 0, 0.95))
             achieved = apply_occlusion(img, x1, y1, x2, y2, f, args.mode,
-                                       rng, boxes, foliage)
+                                       rng, boxes, foliage, stats)
             n_inst += 1
             log.append({"image": img_p.name, "instance": j,
                         "target_frac": round(f, 4),
@@ -245,6 +260,7 @@ def run(args):
         # background distractors — prevents "occluder texture => target here"
         n_dist = int(round(args.distractor_rate * max(len(boxes), 1)))
         for _ in range(n_dist):
+            stats["distractor_attempted"] += 1
             if not boxes:
                 bw_, bh_ = W // 12, H // 12
             else:
@@ -260,7 +276,19 @@ def run(args):
                    for b in boxes):
                 continue
             apply_occlusion(img, dx, dy, dx + bw_, dy + bh_, args.frac,
-                            args.mode, rng, boxes, foliage)
+                            args.mode, rng, boxes, foliage, stats)
+            stats["distractor_placed"] += 1
+
+        if args.verify > 0 and i <= args.verify:
+            # draw the UNCHANGED original boxes over the occluded image, so a
+            # coordinate bug (box misaligned with occlusion) is visible by eye
+            # rather than hidden in a metric. See CLAUDE.md converter convention.
+            vis = img.copy()
+            for bx1, by1, bx2, by2 in boxes:
+                cv2.rectangle(vis, (int(bx1), int(by1)), (int(bx2), int(by2)),
+                             (0, 255, 0), 2)
+            cv2.imwrite(str(verify_dir / f"{img_p.stem}_verify.jpg"), vis,
+                        [cv2.IMWRITE_JPEG_QUALITY, 90])
 
         cv2.imwrite(str(dst / "images" / img_p.name), img,
                     [cv2.IMWRITE_JPEG_QUALITY, 95])
@@ -298,6 +326,9 @@ def run(args):
         "seed": args.seed, "n_images": len(images), "n_instances": n_inst,
         "achieved_frac_mean": round(float(np.mean(achieved)), 4) if achieved else 0,
         "achieved_frac_std": round(float(np.std(achieved)), 4) if achieved else 0,
+        "texture_fallback_count": stats["texture_fallback"],
+        "distractor_attempted": stats["distractor_attempted"],
+        "distractor_placed": stats["distractor_placed"],
     }
     (dst / "occlusion_meta.json").write_text(json.dumps(meta, indent=2))
     (dst / "occlusion_log.json").write_text(json.dumps(log, indent=2))
@@ -310,6 +341,17 @@ def run(args):
           "closely, but jitter and edge clipping shift it slightly and the "
           "per-instance log is your evidence that the buckets are what you "
           "claim they are.")
+    if args.mode == "texture" and stats["texture_fallback"]:
+        pct = 100 * stats["texture_fallback"] / max(n_inst, 1)
+        print(f"! texture mode fell back to a flat fill on "
+              f"{stats['texture_fallback']}/{n_inst} instances ({pct:.1f}%) "
+              f"— no clean non-target patch found nearby. Check dense images.")
+    if args.distractor_rate > 0:
+        print(f"distractors: {stats['distractor_placed']}/"
+              f"{stats['distractor_attempted']} placed "
+              f"(rest skipped, would have overlapped a real target)")
+    if args.verify > 0:
+        print(f"Verify tiles (boxes drawn on occluded images): {verify_dir}")
 
 
 def main():
@@ -329,6 +371,11 @@ def main():
                    help="background occluders per target. Use ~1.0 for TRAINING "
                         "augmentation to prevent shortcut learning.")
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--verify", type=int, default=0,
+                   help="save this many sample images (first N in sorted order) "
+                        "to <out>/verify/ with the original boxes drawn on top of "
+                        "the occlusion, for eyeballing coordinate correctness "
+                        "before trusting the run. 0 disables (default).")
     a = p.parse_args()
     if a.mode == "foliage" and not a.foliage_dir:
         p.error("--mode foliage requires --foliage-dir containing RGBA PNGs")

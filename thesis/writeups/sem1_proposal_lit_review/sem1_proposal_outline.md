@@ -256,8 +256,11 @@ starving the other themes.
 ### 2.2 Occlusion and vegetation (~280 words)
 - Occluded-person datasets and why standard pedestrian-trained detectors fail on partially occluded, non-standing subjects `[cite:pop_infrared2025]`.
 - RGB-thermal fusion as the sensor-side answer to foliage `[cite:gui2026seeing]`. **Critical:** strong result but needs a second, costlier sensor and aligned data; scoped out on cost. This thesis asks how far RGB goes first.
-- Synthetic occlusion as an evaluation instrument. `[cite: synthetic occlusion / cutout-style augmentation]`. **Critical:** synthetic occluders risk shortcut learning and don't reproduce real canopy — hence distractors and a real-occlusion cross-check.
+- Synthetic occlusion as an evaluation instrument. **DECIDED 2026-09-17:** cite `[cite:devries2017cutout]` here (general grounding claim only — one source, per gap report). `[cite:ghiasi2021copypaste]` held back for Process §4.3, where it grounds the `--distractor-rate` mechanism specifically (pasting occluder copies at background locations to block "occluder texture ⇒ target" shortcut learning) — that's the actual Copy-Paste-shaped operation in `occlude.py`, not the default `texture` mode, which self-samples from the same image and isn't a clean match for either paper.
+- **Critical:** synthetic occluders risk shortcut learning and don't reproduce real canopy — hence distractors and a real-occlusion cross-check.
 - Relevance: motivates graded sweep + full-box label policy.
+- **Figure — DECIDED 2026-09-17:** `figures/nomad_yolov8l_visibility_map.png` (extracted from NOMAD `[cite:bernal2024nomad]`, page 8). YOLOv8l mAP@0.5:0.95 vs. visibility level at 5 distances — performance collapses toward zero past ~50 m regardless of visibility, and drops steeply even at 10 m below visibility ~60. Chosen over a qualitative photo since 2.1 already carries one (HERIDAL); this pairs "why it's hard" (2.1) with "what it costs in mAP" (2.2). Reproduced figure, so caption uses "Adapted from".
+  - Caption (~20 words): *"Fig. X. YOLOv8l detection performance vs. NOMAD visibility level, by distance. Adapted from `[cite:bernal2024nomad]`."*
 
 ### 2.3 Real forest SAR data: Weitefeld (~240 words)
 - What it is: real search operation, 10,659 images, 34,424 boxes, 405 findings, 4 classes, real canopy `[cite:nathan2026weitefeld]`.
