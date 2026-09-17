@@ -5,7 +5,7 @@ session_id: 3f5bf045-5b04-47dc-bfa7-e9a0c4e0d727
 machine: Vivobook
 created: 2026-09-16 18:38 AWST
 repo_ref: main @ ee5b5ae
-status: open
+status: superseded
 ---
 
 ## Goal

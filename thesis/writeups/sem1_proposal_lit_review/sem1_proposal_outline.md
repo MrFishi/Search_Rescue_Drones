@@ -110,6 +110,9 @@ carrying marks vs which are padding.
 - Point: three workstreams — detection/HPI pipeline (offline, then on-device), data (public datasets now, bush collection), fleet simulation.
 - Point: the Phase 3 comparisons run as an elimination tournament (~30–40 runs), not a grid (6 × 3 × 4 = 72 pipeline builds before the occlusion sweep multiplies it again).
 - **Figure:** simplified version of `COMPARISON_DEPENDENCY_FLOWCHART.drawio` (stages + gates). Own drawing — no citation issue.
+  - **DECIDED 2026-09-17: use `tournament_funnel.png`** (repo root, hand-drawn). Content verified against `comparison_dependency_flowchart.md` and the exit rule at `phase_execution_guide.md:1400`.
+  - **Fix before use — selection rule is inverted.** Funnel currently reads "accuracy, then latency, memory and power on the Orin". Actual rule: latency + memory budget is a hard pass/fail gate FIRST ("disqualified regardless of mAP"), then survivors rank by mAP. Power is not part of the gate. Reword to e.g. "must clear Orin latency + memory budget, then highest mAP". Must agree with §4.4's stated criteria.
+  - Open question: funnel and flowchart both say "answers O1, O2 and O4", but the final stage evaluates held-out HPI classes and O3 is the stated primary contribution. Confirm whether O3 belongs in that line.
 - Rubric hook: "capable of yielding … repeatable results".
 
 ### 4.2 Datasets and split protocol (~190 words)
@@ -262,6 +265,9 @@ starving the other themes.
 - **Critical point (limitations):** crewed aircraft, not UAV; coarse classes; crowd-sourced subjective labels; `unknown` class semantically messy; person-label noise found in this project.
 - **Novelty differentiator:** low altitude, onboard real-time, finer HPI taxonomy, open-vocab/VLM arms, multi-drone — none addressed there.
 - Relevance: independent evidence for the low-altitude premise and the multi-class validation set.
+- **Figure — DECIDED 2026-09-17: `altitude_ladder.png`** (repo root, hand-drawn). Place here: by 2.3 the reader has met HERIDAL's 45–60 m (2.1), and this is where Weitefeld's ~300 m is argued, so the comparison lands when it's being made. Can be pointed back to from the Introduction. Numbers verified against sources (300 m/1000 ft, 3–5 cm/px, 45–60 m, Sci. Data 13:747).
+  - **Fixes before use:** (1) remove the baked-in "Nathan et al., Scientific Data 13:747 (2026)" footnote from the image — it's author-year and clashes with IEEE numbered; attribution goes in the caption. (2) Add "not to scale" — altitude axis spacing isn't proportional. (3) Cite HERIDAL's altitude as well as Weitefeld's.
+  - Caption (~25 words, captions count toward limit): *"Fig. X. Operating altitude of HERIDAL `[cite:bozicstulic2019heridal]`, Weitefeld `[cite:nathan2026weitefeld]` and the proposed system. Not to scale; silhouette sizes illustrate relative target size in frame."* Own drawing, so no "Adapted from".
 
 ### 2.4 Detector architectures for occluded small targets (~380 words)
 - Group, don't list: local convolution (YOLO11) → edge-simplified CNN (YOLO26) → attention within CNN (YOLOv12) → high-order/global correlation (YOLOv13) → full transformers (RF-DETR, D-FINE). `[cite: each arm's originating paper/report]` — **all currently missing**.
