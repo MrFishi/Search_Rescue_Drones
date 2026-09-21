@@ -84,7 +84,7 @@ carrying marks vs which are padding.
 
 ### 3.3 Significance (~80 words)
 - **Point:** Who benefits and how.
-  - SAR operators: more usable search in vegetated terrain where current aerial detection is weakest `[cite:bozicstulic2019heridal]`, `[cite:nathan2026weitefeld]`. `[cite: SAR operational need / time-criticality of lost-person search]`
+  - SAR operators: more usable search in vegetated terrain where current aerial detection is weakest `[cite:bozicstulic2019heridal]`, `[cite:nathan2026weitefeld]`. **RESOLVED 2026-09-18:** time-criticality now cites `[cite:hashimoto2022lostperson]` (searcher-scarcity clause dropped — no confident source found, see gap report note).
   - Engineering community: an occlusion-graded benchmark and an edge-deployment comparison under a fixed 8 GB budget.
   - Template explicitly asks for benefits to affected parties (financial, KPI, health & safety) — one sentence on life-safety / reduced searcher exposure.
 - **Point:** Contribution statement, exemplar-style: what prior work has not done.
@@ -111,7 +111,7 @@ carrying marks vs which are padding.
 - Point: the Phase 3 comparisons run as an elimination tournament (~30–40 runs), not a grid (6 × 3 × 4 = 72 pipeline builds before the occlusion sweep multiplies it again).
 - **Figure:** simplified version of `COMPARISON_DEPENDENCY_FLOWCHART.drawio` (stages + gates). Own drawing — no citation issue.
   - **DECIDED 2026-09-17: use `tournament_funnel.png`** (repo root, hand-drawn). Content verified against `comparison_dependency_flowchart.md` and the exit rule at `phase_execution_guide.md:1400`.
-  - **Fix before use — selection rule is inverted.** Funnel currently reads "accuracy, then latency, memory and power on the Orin". Actual rule: latency + memory budget is a hard pass/fail gate FIRST ("disqualified regardless of mAP"), then survivors rank by mAP. Power is not part of the gate. Reword to e.g. "must clear Orin latency + memory budget, then highest mAP". Must agree with §4.4's stated criteria.
+  - ~~Fix before use — selection rule is inverted.~~ **Resolved 2026-09-19 (user):** the funnel's metric text is a side list, not an ordered rule, so it doesn't contradict §4.4's gate-then-rank rule. No redraw needed.
   - Open question: funnel and flowchart both say "answers O1, O2 and O4", but the final stage evaluates held-out HPI classes and O3 is the stated primary contribution. Confirm whether O3 belongs in that line.
 - Rubric hook: "capable of yielding … repeatable results".
 
@@ -162,7 +162,7 @@ carrying marks vs which are padding.
 - Point: A1 benchmarked before any VLM work (fairness; avoids "baseline tuned to lose").
 - Point: VLM metric is candidate-clearance throughput and queue backlog at realistic flight speed, not per-frame latency.
 - Point: pre-registered criteria (quote the decision table): A1 adopted if it recovers recall within budget; VLM adopted only if it beats P-2 on held-out classes *and* verification with bounded backlog; D-arm displaces VLM if it matches it at one-forward-pass cost.
-- Candidate VLMs (SmolVLM2, Qwen2-VL-2B, Moondream2, Florence-2, InternVL2.5-1B/2B) and runtime (llama.cpp / Ollama). `[cite: each VLM]`; edge VLM benchmarking method `[cite:sarwar2026benchmarking]`; small-VLM design `[cite:chu2024mobilevlmv2]`.
+- Candidate VLMs (SmolVLM2, Qwen2-VL-2B, Florence-2, InternVL2.5-1B/2B; **Moondream2 dropped 2026-09-20**, no paper) and runtime (llama.cpp / Ollama). `[cite: each VLM]`; edge VLM benchmarking method `[cite:sarwar2026benchmarking]`; small-VLM design `[cite:chu2024mobilevlmv2]`.
 - Open-vocab candidates (YOLO-World / YOLOE / OWLv2 / Grounding DINO). `[cite: each]`
 - Held-out class evaluation with bootstrap CIs over placements.
 
@@ -179,7 +179,7 @@ carrying marks vs which are padding.
 
 ### 4.8 Resources (~60 words, or fold into a table)
 - Rubric overview explicitly asks resources be "identified and justified".
-- RTX 4070 (WSL2) for training; Kaya HPC for Phase 3 sweeps (status unknown — see gaps); Jetson Orin Nano Super (~US$399 after July 2026 price rise, within $1500 project budget); DJI drone; Arducam AR0822; CVAT; licences (Ultralytics AGPL vs RF-DETR Apache-2.0).
+- RTX 4070 (WSL2) for all training (**Kaya NOT used — decided 2026-09-19**); Jetson Orin Nano Super (~US$399 after July 2026 price rise, within $1500 project budget); DJI drone; Arducam AR0822; CVAT; licences (Ultralytics AGPL vs RF-DETR Apache-2.0).
 - Justify the Jetson choice briefly: TensorRT/CUDA maturity and the most common embedded platform in published UAV-SAR detection work (`companion_computer_choices.md`) `[cite: Jetson use in UAV SAR detection]`, `[cite:yolo_sar_drones2025]`.
 
 ---
@@ -295,7 +295,7 @@ starving the other themes.
 ### 2.7 Research gap (~110 words, or end of 2.6)
 - One tight synthesis: no study combines low-altitude onboard detection, graded occlusion, a fine HPI taxonomy, and a fair cheap-baseline test of VLM/open-vocab arms under an 8 GB edge budget. Leads straight into §3.
 
-**Omitted theme to decide on:** multi-drone coordination (O6) has no literature coverage at all. Either one short paragraph with 1–2 sources, or state O6 as secondary and cover it only in Process. `[cite: multi-UAV cooperative search / coverage]`
+**DECIDED 2026-09-18:** multi-drone coordination (O6) gets no LR paragraph. Reasoning: the core project is the single-drone pipeline; the fleet is a later, secondary objective the user's teammates own their own airframes for. O6 stays covered where it already is — Objectives §3.2 (O6, explicitly the first objective descoped if time is short) and Timeline/Risk §5 (descoping order) — not duplicated in the LR. No citation needed here as a result.
 
 ---
 
@@ -316,7 +316,7 @@ the timeline content; the risk register table does most of §5.2's work too.
   - Now: bush dataset collection + annotation → Gate 0 → architecture sweep → training recipe → head comparison → pipeline configurations (A1 strictly before VLM) → occlusion sweep + held-out evaluation → write-up.
   - Why it changed: Weitefeld provides multi-class data and Phase 1 sweeps produce results with no collected data; object-only collection proceeds without ethics.
 - Hard ordering constraints (three): A1 before VLM; architecture before head configuration; seal verification before held-out eval.
-- **Time justification (rubric HD wants "reasonable and justified"):** run budget ~30–40 runs; baseline run cost from the Phase 1 logs (150 epochs, 1024 px on RTX 4070) × runs → hours; Kaya for parallelism. `[gap: wall-clock hours per baseline run]`
+- **Time justification (rubric HD wants "reasonable and justified"):** run budget ~30–40 runs; baseline run cost from the Phase 1 logs (150 epochs, 1024 px on RTX 4070) × runs → hours on the RTX 4070 alone (no Kaya). `[gap: wall-clock hours per baseline run]`
 - Slack / descoping order: Phase 7 → Phase 6 → Phase 5 → A2b stretch. Phase 6 can start early on mocked detections.
 
 ### 5.2 Risk management (~130 words incl. table)
@@ -345,7 +345,7 @@ Columns: risk | type | likelihood | consequence | mitigation. Only real risks �
 increase. Tightest of the three P1/P2/P3 beats, not a dropped one — the rubric
 still wants problem, evidence, and project framing all present.
 
-- **P1 — the problem (~60 words):** lost-person SAR in vegetated terrain is time-critical and searcher-intensive; aerial imagery helps in open ground but canopy hides people and their traces. `[cite: SAR time-criticality / lost person survival]` `[cite:zhang2025aerialsurvey]`
+- **P1 — the problem (~60 words):** lost-person SAR in vegetated terrain is time-critical; aerial imagery helps in open ground but canopy hides people and their traces. **RESOLVED 2026-09-18:** cite `[cite:hashimoto2022lostperson]` for time-criticality (survival rate decreases as search time passes, per its own abstract) `[cite:zhang2025aerialsurvey]`. Searcher-intensiveness clause dropped — no confident source found (see gap report note); don't reintroduce without one.
   - Stakeholders (template §3.1 asks for implications for interested parties): SAR agencies/police/SES, volunteer searchers, missing persons. `[cite: Australian SAR context, optional]`
 - **P2 — what works and what doesn't (~80 words):** HERIDAL-lineage systems perform well on open terrain at 45–60 m (88.9 % detection rate) `[cite:bozicstulic2019heridal]`; on real forest imagery at ~300 m a modern YOLO effectively fails `[cite:nathan2026weitefeld]`; detectors trained on unoccluded data degrade on occluded subjects `[cite:pop_infrared2025]`. Root-cause framing: pixels-on-target and fragmented visible evidence, under an onboard compute limit.
 - **P3 — this project (~60 words):** low-altitude (5–10 m) onboard pipeline on Jetson Orin Nano Super; persons plus human-presence indicators as the primary contribution; graded occlusion evaluation; fair test of VLM and open-vocabulary stages against cheap re-detection; multi-drone coordination in simulation. One sentence on individual contribution within the team.
@@ -357,23 +357,20 @@ still wants problem, evidence, and project framing all present.
 ## Evidence gaps (resolve before writing — don't bluff these)
 
 **Missing literature (highest priority, blocks §2.4–2.6):**
-1. YOLO11 / Ultralytics, YOLO26, YOLOv12, YOLOv13, RF-DETR (+ RF100-VL), D-FINE — no keys.
-2. Mamba (Gu & Dao) — the root of the state-space lineage paragraph.
-3. Open-vocabulary detectors: YOLO-World, OWLv2, Grounding DINO, YOLOE.
-4. The actual candidate VLMs: SmolVLM2, Qwen2-VL, Moondream2, Florence-2,
-   InternVL2.5-1B/2B. (MobileVLM V2 is in the bib but isn't a candidate — use it
-   for design context only.) Florence-2 and InternVL2.5 sourced 2026-09-16, in
-   `temp_papers/` pending vetting.
-5. Multi-UAV cooperative search / coverage (O6) — zero sources.
-6. Synthetic occlusion / cutout augmentation.
-7. SAR operational context (time-criticality, lost-person behaviour / clue finding).
+1. ~~YOLO11 / Ultralytics, YOLO26, YOLOv12, YOLOv13, RF-DETR (+ RF100-VL), D-FINE — no keys.~~ **RESOLVED 2026-09-18/19:** all present — `sapkota2025yoloevolution` (YOLO11/YOLO26), `tian2025yolov12`, `lei2025yolov13`, `robinson2026rfdetr`, `robicheaux2025rf100vl`, `peng2025dfine`.
+2. ~~Mamba (Gu & Dao) — the root of the state-space lineage paragraph.~~ **RESOLVED:** `gu2024mamba` present.
+3. ~~Open-vocabulary detectors: YOLO-World, OWLv2, Grounding DINO, YOLOE.~~ **RESOLVED 2026-09-19:** `cheng2024yoloworld`, `minderer2023owlv2`, `liu2024groundingdino`, `wang2025yoloe` all present, checked against `papers/` PDFs.
+4. ~~The actual candidate VLMs: SmolVLM2, Qwen2-VL, Moondream2, Florence-2, InternVL2.5-1B/2B.~~ **RESOLVED 2026-09-19:** `marafioti2025smolvlm`, `wang2024qwen2vl`, `xiao2024florence2`, `chen2024internvl25` all present (Florence-2/InternVL2.5 vetted and moved out of `temp_papers/`). Moondream2 still has no paper — stays design-context-only, not a citable candidate. `chu2024mobilevlmv2` remains design-context only, not a candidate.
+5. Multi-UAV cooperative search / coverage (O6) — **DECIDED 2026-09-18: not needed.** O6 gets no LR paragraph (see §2.7 decision); stays covered in Objectives/Timeline only.
+6. ~~Synthetic occlusion / cutout augmentation.~~ **RESOLVED:** `devries2017cutout`, `ghiasi2021copypaste` present, both used in §2.2.
+7. ~~SAR operational context (time-criticality, lost-person behaviour / clue finding).~~ **RESOLVED 2026-09-18:** `[cite:hashimoto2022lostperson]` added (Hashimoto et al., *Scientific Reports* 12:5873, 2022; PDF in `papers/`). Covers time-criticality only — searcher-scarcity/resource-intensiveness has no confident source and was dropped from both P1 and §3.3, not added back without one.
 8. CASA RPA regulations (standards criterion).
 9. Jetson in published UAV-SAR detection (the companion-computer doc names an MDPI Drones 2025 thermal paper — verify before use).
 
 **Missing project facts:**
 - Ethics status (submitted? confirmed unnecessary for object-only?).
 - Jetson Orin Nano Super: arrived and brought up? Any on-device number yet?
-- Kaya HPC account status.
+- ~~Kaya HPC account status.~~ Not used for this project (2026-09-19).
 - HPI taxonomy and held-out classes: locked (P0.2)? Needed to state O3 concretely.
 - Occlusion sweeps (P1.6): not in `runs.csv` → not run yet. **Biggest single lever on Progress to Date** — a first degradation curve would move that section up a band. Your call whether there's time before Day 4.
 - Test-set evaluation for Baselines A/B (runs.csv says "test-set eval pending").
