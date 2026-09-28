@@ -42,3 +42,32 @@ Model choices across this project
 
 
 From those six, only the top two, ranked by mAP but only counting ones that actually hit real-time latency and memory limits on the Jetson, get carried forward into my A0/A2 head comparison.
+
+
+---
+
+Phase 3, P3.3: the fine-tuning ladder (R0–R6)
+
+Inside Phase 3, the #1 architecture from the sweep is trained under seven fine-tuning
+recipes. These are named by recipe ID, never by a raw `freeze=` number, because the
+same `freeze=N` freezes different things in different architectures (`freeze=10` is
+not "backbone frozen" in YOLO11, YOLO26 or YOLOv12). Full spec, pinned config and
+selection rule are in `thesis_docs/phase_execution_guide.md`, P3.3.
+
+| ID | Slug | Meaning |
+|---|---|---|
+| R0 | `full` | Everything trainable |
+| R1 | `fzP3` | Stem, P2 and P3 blocks frozen |
+| R2 | `fzP4` | Everything through the P4 block frozen |
+| R3 | `fzBackbone` | Whole backbone frozen, neck and head train |
+| R4 | `headOnly` | Only the detection head trains |
+| R5 | `linProbe` | Only the final 1×1 box and class convs train (the lower bound) |
+| R6 | `staged` | Head-only, then + neck at epoch 30, then + backbone at epoch 60 |
+
+- Run name: `p3_train_R<k>_<slug>_s<seed>`, e.g. `p3_train_R3_fzBackbone_s42`.
+  Seed 42 for the ladder, 43 and 44 only for the top-two confirmation runs.
+- `runs.csv` carries `train_recipe` (`R3_fzBackbone`), `seed` and `trainable_pct` on
+  every row. The Phase 1 baselines carry plain `full`, since they are not P3.3 runs.
+- These are recipe arms on one architecture, not architectures. Do not call them
+  "models" in a results table, and do not call the R5 linear probe a baseline.
+- The D7 initialisation experiment runs under R0 and is reported separately.

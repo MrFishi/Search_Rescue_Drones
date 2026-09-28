@@ -112,7 +112,14 @@ The research question the sub-comparison actually tests is therefore not "which 
 
 ## Training methodology arm added, LoRA considered and rejected
 
-A training-methodology comparison has been added: standard full fine-tuning against backbone-frozen fine-tuning, run on the sweep's top-ranked architecture only. With roughly 40 placements per class the dataset is small, so how much of the model needs to move is a real question, and Ultralytics answers it with a single `freeze` flag at zero implementation cost.
+A training-methodology comparison has been added, run on the sweep's top-ranked architecture only. With roughly 40 placements per class the dataset is small, so how much of the model needs to move is a real question. It was first scoped as full fine-tuning against backbone-frozen fine-tuning (the version in the submitted proposal), and on 2026-09-24 was widened to a seven-arm **fine-tuning depth ladder**, because two points give no curve and no floor:
+
+- **R0** full fine-tune; **R1, R2** freeze through the P3 and P4 stages (the depth sweep); **R3** whole backbone frozen; **R4** head-only; **R5** linear probe (only the final 1×1 box and class convs train), the lower bound; **R6** staged unfreezing (head, then neck, then backbone, at epochs 30 and 60 of 150).
+- All arms share one pinned config and differ only in which parameters may change and when. The top two by validation macro mAP@50-95 are confirmed over three seeds, and the winner is applied to both P3.4 finalists. Selection metric, tie-break and pre-flight checks are fixed in advance in `phase_execution_guide.md` (P3.3).
+- The submitted proposal's "frozen backbone versus full fine-tune" is R3 versus R0 and remains a subset of this design; nothing in it is contradicted.
+- **Correction:** the earlier plan wrote the frozen arm as `freeze=10`. In Ultralytics that freezes the first ten *layers*, which for YOLO11 and YOLO26 leaves the `C2PSA` block trainable (about 53–56% of parameters trainable, not the "30–40%" previously stated). The whole backbone is `freeze=11` for YOLO11/YOLO26 and `freeze=9` for YOLOv12. Recipes are now identified by ID, never by a raw `freeze` number.
+- **D7** is pinned to R0 so the initialisation comparison stays independent of this ladder.
+- Cost: up to 11 runs at this stage instead of 2; the Phase 3 total moves from roughly 32–42 to 41–51.
 
 LoRA was considered as the comparison arm and rejected. The reasoning is recorded here because a documented rejection is worth more than silence. LoRA freezes pretrained weights and trains injected low-rank matrices, which is well suited to dense linear layers such as transformer attention projections. YOLO detectors are overwhelmingly convolutional, so applying LoRA requires a non-standard LoRA-for-convolution variant that Ultralytics does not ship, and there is no strong published baseline for conv detectors to compare against. The decisive consideration is that the thesis would end up defending its LoRA implementation rather than its research question. LoRA remains in scope for Phase 4 VLM fine-tuning, where it is the native and well-supported method.
 

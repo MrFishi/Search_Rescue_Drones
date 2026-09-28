@@ -10,7 +10,7 @@ finish before the next stage can start, and so the run count stays bounded.
 stage's winner is the only thing carried into the next stage. Running every
 architecture through every head configuration through every pipeline configuration
 would be 6 × 3 × 4 = 72 pipeline builds before the occlusion sweep multiplies it by
-six again. The elimination structure keeps the whole of Phase 3 to roughly 30–40 runs.
+six again. The elimination structure keeps the whole of Phase 3 to roughly 39–49 runs.
 
 ---
 
@@ -49,15 +49,19 @@ flowchart TD
     G1 --> S2
     G1 -.if YOLO26 wins.-> ABL["<b>P3.3b — p2 ablation</b><br/>yolo26 vs yolo26-p2<br/>1 run · isolates small-object head"]
     G1 -.after tournament.-> SCALE["<b>P3.8 — Scale sweep</b><br/>n / s / m on winner<br/>3 runs · Pareto curve on Orin<br/>DIRECT ANSWER TO O2"]
-    S2["<b>STAGE 2 — Training methodology</b><br/>P3.3 · 2 runs · winner only"]
-    S2 --> A2a["Full fine-tune<br/>100% trainable"]
-    S2 --> A2b["Backbone frozen<br/>freeze=10"]
+    S2["<b>STAGE 2 — Training methodology</b><br/>P3.3 · up to 11 runs · #1 architecture only<br/>R0–R6 ladder at seed 42, top 2 confirmed over 3 seeds"]
+    S2 --> A2a["<b>R0</b> Full fine-tune<br/>100% trainable"]
+    S2 --> A2b["<b>R1–R4</b> Freeze-depth sweep<br/>fzP3 · fzP4 · fzBackbone · headOnly<br/>97% → 43% → 9% trainable"]
+    S2 --> A2c["<b>R5</b> Linear probe<br/>final box + class convs only<br/>THE FLOOR · ~0.5% trainable"]
+    S2 --> A2d["<b>R6</b> Staged unfreezing<br/>head → neck → backbone<br/>epochs 30 / 60"]
     A2a --> G2
     A2b --> G2
+    A2c --> G2
+    A2d --> G2
     G2{{"GATE 2<br/>winning training recipe"}}
 
     %% ---------- Side experiment: init ----------
-    G1 -.side experiment.-> SX["<b>D7 — Initialisation</b><br/>2 runs · reported separately<br/>COCO-init vs Weitefeld-init"]
+    G1 -.side experiment.-> SX["<b>D7 — Initialisation</b><br/>2 runs · both under R0 · reported separately<br/>COCO-init vs Weitefeld-init"]
     SX -.does not gate.-> RPT[["Reported separately<br/>does NOT feed the tournament"]]
 
     %% ---------- Stage 3: backbone / head ----------
@@ -104,7 +108,7 @@ flowchart TD
 
     class GATE0,G1,G2,G3,G4 gate
     class S1,S2,S3,S4 stage
-    class A1a,A1b,A1c,A1d,A1e,A1f,A2a,A2b,A3a,A3b,A3c arm
+    class A1a,A1b,A1c,A1d,A1e,A1f,A2a,A2b,A2c,A2d,A3a,A3b,A3c arm
     class C1,C2,C3,C4 pipe
     class P1,P2,FIN,RPT term
     class SX,E1,E2,ABL,SCALE side
@@ -120,7 +124,7 @@ flowchart TD
 | **Stage 1** — architecture sweep | Gate 0 | Winning architecture | Stages 2, 3, 4 |
 | **P3.3b** — `yolo26-p2` ablation | Gate 1, and only if YOLO26 won | Small-object head verdict | **Nothing.** Reported alongside. |
 | **P3.8** — scale sweep | Gate 1 | Accuracy/latency Pareto curve on the Orin | **Nothing.** Runs any time after the winner is known. |
-| **Stage 2** — training methodology | Gate 1 | Winning training recipe | Stage 3 |
+| **Stage 2** — training methodology | Gate 1; `train_recipe.py` written; pre-flight checks passed | Winning training recipe (R0–R6 ladder, top two confirmed over 3 seeds) | Stage 3 |
 | **D7 side experiment** — initialisation | Gate 1 | COCO vs Weitefeld init comparison | **Nothing.** Reported separately, deliberately outside the tournament so it can't entangle the datasets. |
 | **Stage 3** — backbone/head | Gate 2 | Winning head config (A0/A2/A2b) | Stage 4 |
 | **Stage 4** — pipeline configs | Gate 3 | P-1…P-4 benchmarked | Stages 5a, 5b |
@@ -178,7 +182,7 @@ Deliberately excluded from the elimination structure so they can't contaminate i
 - **The Arducam validation batch** — test-only, never trained on. It is the sole
   measurement of the DJI→Arducam domain gap now that FOV compensation has been dropped
   from collection.
-- **LoRA** — considered and rejected for the closed-set detector (see P3.3). Remains in
+- **LoRA** — considered and rejected for the closed-set detector (see P3.3; the fine-tuning ladder is what replaces it). Remains in
   scope for Phase 4 VLM fine-tuning only, where it's the native and well-supported
   method.
 - **SSM / Mamba detectors** — scrapped on time-constraint and deployment-risk grounds
@@ -195,7 +199,7 @@ Deliberately excluded from the elimination structure so they can't contaminate i
 | Stage | Runs |
 |---|---|
 | Stage 1 — architecture sweep | 6 |
-| Stage 2 — training methodology | 2 |
+| Stage 2 — training methodology | up to 11 (7 ladder + 4 confirmation) |
 | D7 — initialisation side experiment | 2 |
 | Stage 3 — backbone/head | 2 (3 with A2b) |
 | Stage 4 — pipeline configurations | 4 |
@@ -203,7 +207,7 @@ Deliberately excluded from the elimination structure so they can't contaminate i
 | Stage 5b — held-out evaluation | survivors × 1 |
 | P3.3b — `yolo26-p2` ablation | 1 (conditional) |
 | P3.8 — scale sweep on winner | 3 |
-| **Total** | **~30–40** |
+| **Total** | **~39–49** |
 
 Every row lands in `results/runs.csv`, one row **per class per run**, with git SHA,
 dataset version, and device recorded. At this volume the schema being fixed before

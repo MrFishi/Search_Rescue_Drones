@@ -371,7 +371,7 @@ Record after the P0.7 sim smoke test and the P0.8 Jetson bring-up. Reproducibili
 | JetPack / L4T | JetPack 6.2.2, `-super` device tree | 2026-09-15 |
 | Arducam driver | `<version>` — read off the running Jetson, not yet recorded | |
 | CUDA / TensorRT | `<version>` — read off the running Jetson, not yet recorded | |
-| Ultralytics | pinned in `uv.lock` | |
+| Ultralytics | 8.4.138, pinned in `uv.lock`. `freeze=N` semantics and the "all frozen" `RuntimeError` were checked against this version (2026-09-24) | 2026-09-24 |
 | Dataset versions | `heridal_yolo_v1`, `weitefeld_yolo_v1`, `bush_v1` | |
 
 ---
@@ -423,3 +423,36 @@ small	82%	        20ms
 medium	88%     	45ms
 
 note to self: example values which we would plot to get a pareto front for different model sizes to determine which is best size of the model to use, not just a single operating point 
+
+
+## 2026-09-24 — P3.3 fine-tuning ladder, Ultralytics `freeze` semantics
+
+Decision: the P3.3 training-methodology arm is widened from full vs frozen backbone to
+a seven-arm ladder (R0 full, R1/R2 freeze-depth sweep, R3 backbone frozen, R4 head-only,
+R5 linear probe, R6 staged unfreezing). Spec, pinned config and selection rule live in
+`phase_execution_guide.md` P3.3.
+
+What was checked against Ultralytics 8.4.138 (and is worth remembering):
+
+- `freeze=N` freezes layers `model.0`…`model.N-1`, the first N *layers*, not "the
+  backbone". YOLO11s/YOLO26s backbone is layers 0–10, Detect is layer 23, so the whole
+  backbone is `freeze=11`; `freeze=10` leaves `C2PSA` trainable (52.9% / 55.5% of
+  parameters). YOLOv12s backbone is layers 0–8, Detect is layer 21, whole backbone
+  `freeze=9`. The old plan's `freeze=10` and its "~30–40% trainable" were wrong.
+- Frozen layers also have their BatchNorm held in `eval()` (`_model_train`), driven by
+  `trainer.freeze_layer_names`. Any unfreezing callback must update that list.
+- 8.4.138 raises `RuntimeError` if `freeze` leaves nothing trainable, so a linear probe
+  cannot be `freeze=<all layers>`; it is `freeze=<Detect index>` plus an `on_train_start`
+  callback that freezes all of `Detect` except the final 1×1 convs.
+- `patience=0` is treated as infinite (early stopping off).
+- The optimiser is built over all parameters before training, so `requires_grad`
+  flipped on later (staged unfreezing) is picked up with no rebuild.
+- Gotcha when smoke-testing on a tiny set: the optimiser steps only every
+  `nbs / batch` batches (`nbs=64`), so a 12-batch test with `batch=4` never steps and
+  every parameter looks "frozen". Set `nbs` equal to `batch` for such tests.
+
+Smoke test (yolo11n, CPU, synthetic data) confirmed: R3 leaves backbone weights and
+BatchNorm statistics bit-identical; R5 changes only the 12 final-conv tensors; R6 steps
+trainable parameters 431k → 1.22M → 2.59M at the scheduled epochs. Still to do before
+the ladder: write `vision/training/train_recipe.py`, and rerun the pre-flight on the
+real #1 and #2 architectures.

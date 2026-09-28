@@ -74,6 +74,11 @@ VLM arm is evaluated, not assumed to win (a negative VLM result is a valid resul
   confidence to tell a coordinate bug from an undertrained model.
 - When adding deps, use `uv add` and keep `uv.lock` committed and synced.
 - Pin versions in the `thesis_docs/dev_notes.md` "Pinned Versions" table when they're established.
+- **Fine-tuning recipes (P3.3):** name them by ID (R0–R6), never by a raw `freeze=N`.
+  `freeze=10` is not "backbone frozen" (it freezes the first ten *layers*; the YOLO11/26
+  backbone is eleven). All arms run through one entry point with the pinned config in
+  `thesis_docs/phase_execution_guide.md` P3.3; only the freeze/schedule may differ between
+  arms, and every `runs.csv` row carries `train_recipe`, `seed` and `trainable_pct`.
 - **Naming discipline:** never call a `tiny/` gate run a "baseline" or a "result" —
   see `training_nomenclature.md`. Baseline A = HERIDAL/yolo11s, Baseline B =
   Weitefeld/yolo11s. The Phase 3 sweep is the six named architectures, not variants

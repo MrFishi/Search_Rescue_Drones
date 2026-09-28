@@ -95,6 +95,46 @@ more data-efficient.
 
 ---
 
+## How much of the model should fine-tuning change?
+
+Starting from COCO does not settle how much of the network you let move. **Freezing**
+means locking some weights at their pretrained values so training cannot change them
+(and in Ultralytics it also stops their BatchNorm statistics drifting). With about 40
+placements per class, moving everything risks overfitting, and moving nothing risks
+never adapting to aerial, occluded bush. So Phase 3 (P3.3) runs a ladder of seven
+recipes on the top architecture, from most to least adapted:
+
+- **Full fine-tune (R0):** everything trains.
+- **Freeze the early layers (R1, R2):** lock the low-level edge and texture layers
+  (through the P3, then P4 stage) and train the rest. Only about 3% and 13% of the
+  weights are frozen, so this is the cheap end of the sweep.
+- **Freeze the whole backbone (R3):** train only the neck and head (about 43% of the
+  weights).
+- **Head only (R4):** train only the detection head (about 9%).
+- **Linear probe (R5):** train only the final layer that reads out boxes and classes
+  (about 0.5%). This is the floor: how much of the task COCO features already solve
+  with no real adaptation.
+- **Staged unfreezing (R6):** head first, then the neck at epoch 30, then the backbone
+  at epoch 60, so the pretrained layers are not disturbed by a randomly initialised
+  head early on.
+
+Same data, same 150 epochs, same settings for every recipe; only which weights are
+allowed to change differs. The top two recipes are repeated over three seeds so the
+winner is not picked by luck. Note that `freeze=10` is not "backbone frozen" in
+YOLO11 or YOLO26 (it freezes ten layers and leaves one backbone block trainable), which
+is why the recipes are named by ID.
+
+Marker Q: *Why not LoRA?* LoRA adapts dense linear layers, which is where transformer
+weights live. YOLO detectors are convolutional, LoRA has no standard conv form or
+published baseline, and I would be defending my own implementation instead of my
+research question. It stays in scope for the Phase 4 VLM.
+
+Marker Q: *What does the linear probe tell you?* The gap between it and full
+fine-tuning is the value of adapting the features at all. If the two are close, COCO
+features are already doing most of the work.
+
+---
+
 ## The training loop
 
 The training set is cut into batches (yours is 8 images). One epoch is one full pass
@@ -189,9 +229,11 @@ than assuming it.
 - Batch / epoch: a group of images processed together / one full pass over the set.
 - Checkpoint: a saved snapshot of the weights.
 - Fine-tuning: continuing to train a pretrained model on your own data.
+- Freezing: locking weights so training cannot change them; `freeze=N` in Ultralytics locks the first N layers.
 - Head: output layers producing boxes and class scores.
 - IoU: overlap over combined area of two boxes; decides if a detection counts.
 - Leakage: test information reaching training, inflating results.
+- Linear probe: training only the final prediction layer on top of frozen features; the lower bound for fine-tuning.
 - Loss: single number for how wrong predictions are; training minimises it.
 - mAP: mean Average Precision across classes; @50 vs @50-95 are IoU thresholds.
 - Neck: merges multi-scale backbone features (FPN, PANet).

@@ -289,8 +289,16 @@ without this it's unanswerable.
 ```
 run_id, git_sha, date, model, weights, dataset_version, split, occlusion_mode,
 occlusion_frac, provenance_filter, class_name, precision, recall, map50,
-map50_95, latency_ms_mean, latency_ms_p95, device, power_w_mean, notes
+map50_95, latency_ms_mean, latency_ms_p95, device, power_w_mean, train_recipe,
+seed, trainable_pct, notes
 ```
+
+`train_recipe`, `seed` and `trainable_pct` were added 2026-09-24 for the P3.3 fine-tuning
+ladder: `train_recipe` is the recipe ID (`R0_full` … `R6_staged`, see P3.3 and
+`training_nomenclature.md`; the Phase 1 baselines carry plain `full`, since they are
+not P3.3 runs), `seed` is the training seed, and `trainable_pct` is trainable ÷ total
+parameters. `args.yaml` cannot record a callback, so this column is the only record of
+what R5 and R6 were.
 
 Note `class_name`: with HPI primary, per-class rows are the whole point. Aggregate
 mAP hides exactly the effect you're studying — a model can post a respectable
@@ -1315,6 +1323,14 @@ legible.
 Do not let Weitefeld-init become the silent default for every arm. That would
 entangle the two datasets in exactly the way D6 exists to prevent.
 
+**Training recipe for D7: R0 (full fine-tune), fixed.** Both init arms train under the
+R0 recipe from P3.3 with the identical pinned config, so the *only* difference between
+them is the starting weights. This also keeps D7 independent of P3.3, so it can run as
+soon as Gate 1 clears, as the flowchart shows. The COCO-init arm **is** the R0 run
+(reuse it, do not retrain); only the Weitefeld-init arm is new. Do not run D7 under
+a frozen recipe: a frozen backbone would make the init comparison a measurement of
+frozen features rather than of initialisation.
+
 ---
 
 ## P3.1 — Candidate architecture search (~2 days reading, ~1 day shortlisting)
@@ -1402,8 +1418,9 @@ held-out test set, considering only architectures that clear the on-device laten
 memory budget (a model that can't hit frame rate on the Orin is disqualified regardless
 of mAP; if fewer than two clear the budget, that shortfall is itself a reportable
 result). The **two highest-mAP budget-clearing architectures** are both carried into
-the A0/A2 head comparison (P3.4). The training-methodology decision (P3.3) is still made
-on the #1 architecture only and its winning recipe applied to both finalists — the
+the A0/A2 head comparison (P3.4). The training-methodology decision (P3.3, the R0–R6
+fine-tuning ladder) is still made on the #1 architecture only and its winning recipe
+applied to both finalists — the
 recipe is assumed to transfer, which is a far weaker assumption than assuming the
 architecture ranking survives the head split. A single architecture-plus-head winner is
 chosen at P3.4, and strict elimination resumes for every stage below it. This costs two
@@ -1505,7 +1522,7 @@ of tooling apiece.
 
 ---
 
-## P3.3 — Training methodology: full fine-tune vs LoRA vs layer freezing
+## P3.3 — Training methodology: fine-tuning depth ladder (LoRA rejected)
 
 You asked whether to run standard Ultralytics full-model training against LoRA-style
 fine-tuning as a comparison arm. Short answer: **the underlying question is worth
@@ -1535,38 +1552,213 @@ Detection is a different shape of problem:
   the **text encoder** of an open-vocabulary D-arm model like YOLO-World if you
   fine-tune it. Both are transformer components. Neither is the closed-set detector.
 
-### What to run instead
+### What to run instead: a fine-tuning depth ladder
 
 The real question behind "LoRA vs full training" is **how much of the model needs to
-move given a small dataset** — you have ≥40 placements per class, which is small.
-Ultralytics answers that with one flag:
+move given a small dataset** — you have ≥40 placements per class. A single
+full-vs-frozen pair gives two points and no idea where the optimum sits or what the
+floor is. Scope widened on 2026-09-24 to a seven-arm ladder: it costs a handful of
+extra short runs, and it yields a depth curve plus a lower bound (how much of the task
+COCO features already solve before any adaptation).
 
-```bash
-# Full fine-tune (default) — everything trainable
-yolo detect train model=yolo26s.pt data=configs/bush_v1.yaml \
-    epochs=150 imgsz=1024 seed=42 \
-    project=../results/runs name=p3_train_full
+All arms run on the **#1 architecture only**, and differ in exactly one thing: *which
+parameters may change, and when.* Nothing else varies (see "Pinned config" below).
 
-# Backbone-frozen — train neck + head only
-yolo detect train model=yolo26s.pt data=configs/bush_v1.yaml \
-    epochs=150 imgsz=1024 seed=42 freeze=10 \
-    project=../results/runs name=p3_train_freeze10
-```
+| ID | Name | What is trainable | `freeze=` YOLO11 / YOLO26 | `freeze=` YOLOv12 | Trainable % (11s / 26s / 12s) |
+|---|---|---|---|---|---|
+| **R0** | `full` | Everything | `0` | `0` | 100 / 100 / 100 |
+| **R1** | `fzP3` | Everything after the P3 stage (stem, P2 and P3 blocks frozen) | `5` | `5` | 96.9 / 97.0 / 96.8 |
+| **R2** | `fzP4` | Everything after the P4 stage (through the stride-16 block frozen) | `7` | `7` | 87.0 / 87.7 / 83.0 |
+| **R3** | `fzBackbone` | Neck + head (whole backbone frozen) | **`11`** | **`9`** | 42.5 / 45.6 / 41.3 |
+| **R4** | `headOnly` | The whole `Detect` module (backbone and neck frozen) | `23` | `21` | 9.0 / 9.9 / 9.2 |
+| **R5** | `linProbe` | Only the final 1×1 box and class convs of `Detect`, all scales | `23` + callback | `21` + callback | 0.46 / 0.63 / 0.47 |
+| **R6** | `staged` | Gradual unfreezing: R4 → R3 → R0 at epochs 30 / 60 | callback | callback | 9 → 43 → 100 |
 
-| | Full fine-tune | Freeze backbone (`freeze=10`) | LoRA |
-|---|---|---|---|
-| **Trainable params** | 100% | ~30–40% | ~1–5% |
-| **Training time** | Baseline | ~30–50% faster | Faster, but needs custom code for convs |
-| **Data efficiency on small sets** | Can overfit | Better — pretrained features preserved | Best in principle, unproven for conv detectors |
-| **Final accuracy** | Usually highest given enough data | Slightly lower, sometimes higher on small data | Unclear for CNN detectors; no strong published baseline to cite |
-| **Implementation cost** | Zero | Zero (one flag) | Days, plus a novel-implementation risk you'd have to defend |
-| **Defensibility in a thesis** | Standard | Standard | You'd be defending your LoRA-for-conv implementation, not your research question |
+R1 and R2 are the depth sweep, cut at the P3 and P4 stage boundaries so the rungs mean
+the same thing across architectures. R4 and R5 are the lower bounds. R6 is the
+schedule-based alternative to a static freeze. **Plot the sweep against trainable %,
+not layer index**; layer indices do not compare across architectures.
+
+Trainable % figures were computed from the model YAMLs under the pinned Ultralytics
+**8.4.138** (`nc=4` placeholder; identical on 8.4.43). The real class count moves them
+by a fraction of a point, so they are re-checked at pre-flight (below).
+
+#### Correction to the earlier plan: `freeze=10` is not "backbone frozen"
+
+`freeze=N` in Ultralytics freezes `model.0` … `model.N-1`, i.e. the first N *layers*,
+not "the backbone". In YOLO11 and YOLO26 the backbone is layers 0–10 (layer 10 is
+`C2PSA`), so `freeze=10` leaves `C2PSA` trainable and leaves **52.9% (YOLO11s) / 55.5%
+(YOLO26s)** of parameters trainable, not the "~30–40%" this guide previously stated.
+The whole backbone is `freeze=11`. In YOLOv12 the backbone is layers 0–8, so
+`freeze=10` happens to freeze all of it. **Never write `freeze=10` again; use the
+recipe IDs.** Any P3.3 result produced with `freeze=10` would have meant different
+things for different architectures.
+
+#### Exact mechanics (so every arm is implemented the same way)
+
+- **Frozen layers are fully frozen, including BatchNorm statistics.** Ultralytics sets
+  `requires_grad=False` on the frozen parameters and, in `_model_train()`, puts frozen
+  `BatchNorm2d` layers in `eval()` so running mean/variance do not drift. The trainer
+  drives this from `trainer.freeze_layer_names`, so any callback that unfreezes must
+  update that list as well as `requires_grad`. `.dfl` is always frozen by Ultralytics
+  (it holds a fixed non-learnable projection).
+- **R5 linear probe** is "every weight frozen except the final 1×1 prediction convs".
+  Ultralytics 8.4.138 raises `RuntimeError` if `freeze` leaves *nothing* trainable
+  (confirmed: `freeze=24` on YOLO11), so pass `freeze=<Detect index>` (`23`, which is
+  R4), then in an `on_train_start` callback (a) append `"model.<det>."` to
+  `trainer.freeze_layer_names` so every `Detect` BatchNorm is held in eval, and (b) set
+  `requires_grad=False` on every `Detect` parameter whose name does **not** match
+  `^model\.<det>\.(cv2|cv3|one2one_cv2|one2one_cv3)\.\d+\.2\.(weight|bias)$`. What
+  remains is the box-regression readout and the class readout per scale (`cv2.i.2`,
+  `cv3.i.2`); `one2one_*` exist only for YOLO26's end-to-end head. The box readout keeps
+  its COCO weights (same shape); the class readout is re-initialised because `nc`
+  differs from COCO, so it is learned from scratch on frozen COCO features. That is
+  what makes it a linear probe.
+- **R6 staged** uses a callback on `on_train_epoch_start` (which runs before
+  `_model_train()`, so the BatchNorm state is right in the same epoch). Total epochs
+  stay 150, so compute is matched to every other arm:
+
+  | Epochs (1-indexed) | State | Equivalent to |
+  |---|---|---|
+  | 1–30 | `Detect` only | R4 |
+  | 31–60 | + neck | R3 |
+  | 61–150 | + backbone (everything) | R0 |
+
+  ```python
+  # smoke-tested on YOLO11n, Ultralytics 8.4.138 (see pre-flight); not yet run on the real arms
+  def release(trainer, frozen_upto):
+      names = [f"model.{i}." for i in range(frozen_upto)] + [".dfl"]
+      trainer.freeze_layer_names = names           # drives BN eval in _model_train
+      for k, v in trainer.model.named_parameters():
+          if not any(n in k for n in names) and v.dtype.is_floating_point:
+              v.requires_grad = True
+
+  def on_train_epoch_start(trainer):               # trainer.epoch is 0-indexed
+      if trainer.epoch == 30: release(trainer, BACKBONE_END)   # neck joins
+      if trainer.epoch == 60: release(trainer, 0)              # backbone joins
+  ```
+  The optimiser is built once over all parameters, so a parameter flipped to
+  `requires_grad=True` later is already registered and starts updating with no
+  optimiser rebuild. No custom learning rate: Ultralytics' linear schedule means the
+  backbone joins at ≈0.6 × `lr0` and decays from there. That is deliberate, and it is
+  documented rather than tuned.
+- **What was smoke-tested (2026-09-24, Ultralytics 8.4.138, yolo11n, CPU, synthetic
+  data, `nbs` = batch so every batch steps):** under R3 the backbone (layers 0–10)
+  stayed bit-identical, BatchNorm running statistics included; under R5 only the 12
+  final-conv tensors (3 scales × box/class × weight/bias) changed and no BatchNorm
+  statistic moved, even in `Detect`; under R6 the trainable-parameter count stepped
+  431 k → 1.22 M → 2.59 M exactly at the scheduled epochs. That validates the mechanism.
+  It does not replace the pre-flight on the real architectures.
+- **One entry point, no CLI variants.** The callbacks need the Python API, so *all*
+  seven arms run through a single script, `vision/training/train_recipe.py --recipe R3
+  --seed 42` (to be written before P3.3), never through hand-typed `yolo detect
+  train` lines. Run name: `p3_train_R<k>_<slug>_s<seed>`, e.g.
+  `p3_train_R3_fzBackbone_s42` (see `training_nomenclature.md`).
+
+#### Pinned config: identical across all arms
+
+Every arm inherits the #1 architecture's P3.1 hyperparameter block verbatim (same
+optimiser, `lr0`, `lrf`, warmup, batch, `close_mosaic`, augmentation, `nbs`), and
+these are set explicitly rather than left to defaults:
+
+| Setting | Value | Why |
+|---|---|---|
+| `data` | `configs/bush_v1.yaml` | D6: bush data only |
+| `epochs` | `150` | Same compute for every arm |
+| `imgsz` | `1024` | Small targets |
+| `seed`, `deterministic` | `42`, `True` (`43`, `44` only for the confirmation runs) | Reproducibility |
+| `patience` | `0` (early stopping off; Ultralytics treats 0 as infinite) | A head-only arm plateaus early and must not stop sooner than the others |
+| `pretrained` / init | COCO checkpoint of the #1 architecture | D7 default |
+| `optimizer`, `lr0`, `lrf`, `nbs`, `batch` | Explicit values from the P3.1 block, never `optimizer=auto` (Phase 1 baselines: AdamW, `lr0=0.001`, `lrf=0.01`, `batch=8`, `nbs=64`) | `auto` picks the optimiser and overrides `lr0` from iteration count, hiding what actually ran |
+| `freeze` / callback | per the ladder table | **The only thing that varies** |
+
+**R0 is the P3.1 run of the #1 architecture, reused, but only if its `args.yaml`
+matches this block field for field.** If it does not, rerun R0 under this block. After
+all arms finish, `diff` every `args.yaml` against R0's: the only permitted differences
+are `name` and `freeze`. Callback arms (R5, R6) additionally log their recipe ID in
+`runs.csv`, since `args.yaml` cannot record a callback.
+
+#### Architecture mapping (fixed before the first run)
+
+The recipe is applied to the #1 architecture and then to the #2 finalist (P3.4).
+Ultralytics layer indices only mean something for Ultralytics-style YAML models, so the
+ladder is defined by **module role**, with the concrete module list recorded here per
+architecture.
+
+| Architecture | Backbone (R3 boundary) | R1 / R2 cut | Head-only (R4) | Linear probe (R5) | Status |
+|---|---|---|---|---|---|
+| YOLO11s | Layers 0–10 (`freeze=11`) | 0–4 / 0–6 | `Detect` (layer 23) | `cv2.i.2`, `cv3.i.2` | Verified, 8.4.138 YAML |
+| YOLO26s | Layers 0–10 (`freeze=11`) | 0–4 / 0–6 | `Detect` (23), incl. `one2one_*` | `cv2/cv3/one2one_cv2/one2one_cv3 .i.2` | Verified, 8.4.138 YAML |
+| YOLOv12s | Layers 0–8 (`freeze=9`) | 0–4 / 0–6 | `Detect` (layer 21) | `cv2.i.2`, `cv3.i.2` | Verified, 8.4.138 YAML |
+| YOLOv13s | Read off its YAML | Stride-8 / stride-16 block outputs | Detection head | Final 1×1 box + class convs | **Fill in before use** |
+| RF-DETR | Image encoder | First ⅓ / ⅔ of encoder blocks | Decoder + prediction heads (projector / encoder frozen) | Final class-logit and box-coordinate linear layers | **Fill in before use** |
+| D-FINE-S | Image backbone | Stages through stride-8 / stride-16 | Decoder + prediction heads (hybrid encoder frozen) | Final class-logit and box-coordinate linear layers | **Fill in before use** |
+
+For any "Fill in before use" row: write the exact module-name list and its trainable %
+into this table, and commit it, *before* the first P3.3 run that touches that
+architecture. Nothing about the mapping is decided after seeing results.
+
+#### Selection rule (pre-registered)
+
+- **Metric:** macro-averaged mAP@50-95 over the trained classes on the **bush `val`**
+  split, taken from each run's `best.pt`. Not the test split: recipe selection on the
+  test set would leak into the held-out figure. Per-class numbers are always reported
+  too; the HPI-only macro is the secondary view, since aggregate mAP hides the rare
+  classes.
+- **Stage 1, the ladder:** all seven arms at seed 42.
+- **Stage 2, confirmation:** the **top two** arms by the Stage 1 metric are rerun at
+  seeds 43 and 44 (4 extra runs). With ~40 placements per class, single-seed gaps
+  between neighbouring rungs are likely to be inside noise, and this is what stops the
+  recipe being chosen by luck.
+- **Winner:** the higher 3-seed mean of the metric. If the two means are within **0.5
+  mAP points**, take the arm with **fewer trainable parameters**: it is cheaper to
+  train and less prone to overfit. This threshold is set now, before any result.
+- The winning recipe is applied unchanged to both finalists in P3.4. The test split is
+  touched once, for the winner, when it is reported.
+
+#### Pre-flight checks (run once, before the ladder)
+
+1. **Indices and percentages on the real arms:** with the real `nc`, print trainable /
+   total parameters per arm for the #1 architecture (then again for #2) and assert
+   each is within ±0.5 points of the table above. The 8.4.138 YAMLs already match;
+   this catches `nc` effects and any Ultralytics bump.
+2. **Frozen means frozen:** a 2-epoch smoke run per arm; assert frozen parameters are
+   bit-identical before and after, and that BatchNorm running statistics in frozen
+   layers are unchanged.
+3. **R6 timing:** log `requires_grad` group counts at epochs 29, 30, 60 and 61 and
+   confirm the flips happen exactly there, under the optimiser actually used (the
+   smoke test used AdamW; if a YOLO26 run uses MuSGD, check it there too).
+4. **`patience=0`** actually disables early stopping in the pinned version (all arms
+   must reach epoch 150).
+5. **R0 reuse:** confirm the P3.1 `args.yaml` matches the pinned block, or rerun R0.
+6. Log `train_recipe`, `seed` and `trainable_pct` in `runs.csv` for every row (schema
+   above), plus wall-clock training time and peak GPU memory in `notes`.
+
+#### What each rung tells you (for the write-up)
+
+- **R5 (linear probe) is the floor.** The gap R0 − R5 is the value of adapting the
+  representation at all. If R5 is already close to R0, COCO features are doing most of
+  the work.
+- **R4 vs R3 vs R0** is the "how much must move" curve. R0 ≫ R3 says the aerial,
+  occluded domain needs backbone adaptation (and makes the D7 Weitefeld-init question
+  more interesting). R3 ≥ R0 says the small dataset cannot usefully move the backbone.
+- **R1 and R2 vs R0** test whether the cheap, generic low-level layers need to move.
+  Only ~3% and ~13% of parameters are frozen there, so an R0-like result is expected
+  and is itself a finding: early layers are free to freeze.
+- **R6 vs R0** share the same final trainable set and the same 150 epochs; the only
+  difference is head-first ordering. It isolates whether *schedule* helps.
+- Report **per class**, watching the rare HPI classes, and report the train-vs-val loss
+  gap per arm as direct evidence for or against the overfitting argument.
+
+**Cost.** 7 runs at seed 42 (6 if R0 reuses the P3.1 run) + 4 confirmation runs = **up
+to 11 runs**, against 2 before. Head-only and probe arms are much faster per epoch
+(backward pass stops at the head); LoRA would not have been.
 
 ### Recommendation
 
-**Run full vs `freeze=10` as a genuine comparison arm — it's two runs and one flag,
-and given your small dataset the answer is not obvious.** Report it as a training-
-methodology result on the sweep's top-ranked (#1) architecture only, not across all four.
+**Run the R0–R6 ladder on the #1 architecture, confirm the top two over three seeds,
+and apply the winner to both finalists.** Report it as a training-methodology result
+on the sweep's top-ranked architecture only, not across all six.
 
 **Drop LoRA from Phase 3 entirely.** The payoff is unclear, the implementation is
 non-trivial for conv detectors, and — the decisive point — you would end up defending
@@ -1730,8 +1922,8 @@ the head comparison, where the single architecture-plus-head winner is chosen.
 | Stage | Runs | Depends on | Output |
 |---|---|---|---|
 | P3.1/P3.2 architecture sweep | 6 architectures × 1 config | Phase 2 dataset, Phase 1 pipeline | **Top 2 architectures** |
-| P3.3 training methodology | 2 runs (full vs freeze) | #1 architecture | Winning training recipe |
-| D7 init side experiment | 2 runs (COCO vs Weitefeld init) | #1 architecture | Reported separately |
+| P3.3 training methodology | **up to 11 runs**: R0–R6 ladder at seed 42 (R0 reuses the P3.1 run), then top two rerun at seeds 43 and 44 | #1 architecture | Winning training recipe |
+| D7 init side experiment | 2 runs (COCO vs Weitefeld init), both under R0; COCO arm reuses the R0 run, so 1 new | #1 architecture | Reported separately |
 | P3.3b `yolo26-p2` ablation | 1 run | Only if YOLO26 is a finalist | Small-object head verdict |
 | P3.4 backbone/head | **4 runs (top-2 arch × A0/A2)**, +1 if A2b | Top 2 architectures + recipe | Winning **architecture + head config** |
 | P3.5 pipeline configs | 4 configs (P-1…P-4) | Winning head config; A1 before any VLM work | Pipeline comparison |
@@ -1739,11 +1931,14 @@ the head comparison, where the single architecture-plus-head winner is chosen.
 | P3.7 held-out eval | Survivors × held-out set | All above; seal verified | Headline result |
 | P3.8 scale sweep | 3 runs (n/s/m) on winner | Gate 1 | Accuracy/latency Pareto curve on the Orin — the direct answer to O2 |
 
-Roughly 32–42 training/eval runs total — the top-2 carry-forward adds two runs at
-P3.4 over a strict funnel. The elimination structure is what keeps that from becoming
-200+; a full architecture × recipe × head × init × scale grid would be ~140 training
-runs before the pipeline, D-arm, or scale stages, which is why only the single most
-consequential elimination (the architecture sweep) is relaxed, and only by one place.
+Roughly 41–51 training/eval runs total (previously 32–42): the top-2 carry-forward adds
+two runs at P3.4 over a strict funnel, and the P3.3 fine-tuning ladder adds up to nine
+over the original two-run comparison. The elimination structure is what keeps that
+from becoming 200+; a full architecture × recipe × head × init × scale grid would be
+~140 training runs before the pipeline, D-arm, or scale stages (counting the recipe
+axis at two levels; with the seven-rung ladder it is larger still), which is why only
+the single most consequential elimination (the architecture sweep) is relaxed, and
+only by one place.
 
 **On the scale sweep (P3.8), which is new and worth the three runs.** O2 asks about
 accuracy versus latency versus resources on-device. Six architectures at one scale
@@ -1761,14 +1956,16 @@ picked a winner.
 - Top two architectures from the sweep carried into the head comparison; single
   architecture-plus-head winner selected there and carried downstream
 - Scale sweep (n/s/m) on the winner, giving the on-device Pareto curve
-- Training methodology comparison (full vs freeze) reported on the #1 architecture
+- Training methodology (R0–R6 fine-tuning ladder: full, freeze-depth sweep, head-only,
+  linear probe, staged unfreezing) reported on the #1 architecture, with the top two
+  confirmed over three seeds and the winner applied to both finalists
 - A0 vs A2 reported per-class on both finalists, with the second head's latency
   overhead measured
 - All four pipeline configurations benchmarked, A1 established before VLM work began
 - Occlusion degradation curves for survivors, cross-checked against real occlusion
 - Held-out evaluation with bootstrap CIs over placements, seal verified
 - Every run in `runs.csv` with `provenance_filter = bush_own`, per class, git SHA
-  logged
+  logged, and `train_recipe`, `seed` and `trainable_pct` filled
 
 ## Documents to update after Phase 3 decisions land
 
@@ -1777,8 +1974,8 @@ picked a winner.
   the corrected architectural characterisations.
 - Record that the SSM/Mamba arms were considered and scrapped on time-constraint and
   deployment-risk grounds, and that the papers remain in related work.
-- Add the training-methodology arm; record that LoRA was considered and dropped, with
-  the reason. A documented rejection is worth more than silence.
+- Add the training-methodology arm (the R0–R6 ladder); record that LoRA was considered
+  and dropped, with the reason. A documented rejection is worth more than silence.
 - Add the scale sweep as the direct answer to O2.
 - Phase 5's temporal accumulation arm: record the stills-only decision and the
   Weitefeld multi-view substitution.
