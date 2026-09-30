@@ -363,11 +363,11 @@ Record after the P0.7 sim smoke test and the P0.8 Jetson bring-up. Reproducibili
 
 | Component | Version / SHA | Recorded |
 |---|---|---|
-| PX4-Autopilot | `<git SHA>` | |
-| Gazebo | Harmonic `<version>` | |
-| ROS2 distro (sim stack, dev machine) | Jazzy, Ubuntu 24.04 | |
+| PX4-Autopilot | `171f0f38cf` (2026-06-25, "fix(fw_mode_manager): Fix regression with offboard gliding setpoints (#26538)") | 2026-09-30 |
+| Gazebo | Harmonic, Gazebo Sim 8.10.0 | 2026-09-30 |
+| ROS2 distro (sim stack, dev machine) | Jazzy, Ubuntu 24.04 | 2026-09-30 |
 | ROS2 distro (Jetson) | Humble, Ubuntu 22.04 (forced by AR0822 driver/L4T support) | |
-| uXRCE-DDS Agent | `<version>` | |
+| uXRCE-DDS Agent | v3.0.1 (`155cfaa`, 2025-03-18) | 2026-09-30 |
 | JetPack / L4T | JetPack 6.2.2, `-super` device tree | 2026-09-15 |
 | Arducam driver | `<version>` — read off the running Jetson, not yet recorded | |
 | CUDA / TensorRT | `<version>` — read off the running Jetson, not yet recorded | |
@@ -456,3 +456,25 @@ BatchNorm statistics bit-identical; R5 changes only the 12 final-conv tensors; R
 trainable parameters 431k → 1.22M → 2.59M at the scheduled epochs. Still to do before
 the ladder: write `vision/training/train_recipe.py`, and rerun the pre-flight on the
 real #1 and #2 architectures.
+
+---
+
+## 2026-09-30 — P0.7 sim stack smoke test
+
+Run on the laptop (Vivobook, no GPU), following `simulation/sim_setup.README.md`
+(the up-to-date version — the abbreviated snippet in `phase_execution_guide.md`
+P0.7 is stale: it says `ros2_ws`/`sim_launch.py`, actual paths are
+`sar_drone_ws`/`sim_single_drone.launch.py`).
+
+Confirmed working end to end: `make px4_sitl gz_x500` (headless, `-s`, no GUI
+needed) → `MicroXRCEAgent udp4 -p 8888` bridges `/fmu/in/*` and `/fmu/out/*` into
+ROS2 → `ros2 topic echo /fmu/out/vehicle_odometry --once` returns live pose/velocity
+→ `ros2 run sar_drone hover` (node name: `offboard_hello_world`) sends offboard mode
++ ARM and the vehicle climbs toward the -5.0 m NED target. Versions recorded in the
+Pinned Versions table above. Sim stack was stopped after confirming — nothing left
+running per the guide's "then leave it" instruction.
+
+Cosmetic-only noise, not a bug: `rmw_cyclonedds_cpp` logs a "Failed to parse type
+hash" WARN per `px4_msgs` topic on every `ros2 topic list`/`echo`/node start. Topics
+still list and data still flows; this is a known cyclonedds/px4_msgs type-hash
+metadata quirk, not a bridge failure.
