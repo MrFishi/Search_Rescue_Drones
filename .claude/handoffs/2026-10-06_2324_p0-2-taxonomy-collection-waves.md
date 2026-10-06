@@ -5,7 +5,7 @@ session_id: c069e1a0-34cd-49f1-bd31-912e1dc3a9fd
 machine: Vivobook
 created: 2026-10-06 23:24 AWST
 repo_ref: main @ 85b2844
-status: open
+status: superseded
 supersedes: 2026-09-29_0207_finish-phase-0-1-checklist.md
 ---
 

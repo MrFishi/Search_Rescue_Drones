@@ -70,6 +70,9 @@ be p-hacking the headline claim.
 
 ## 4. TODO — still to work through together
 
+Draft per-class protocol: `annotation_protocol.md` (2026-10-07, [confirm] items
+open). Draft targets and waves: `collection_plan.md`.
+
 - Per-class annotation protocol (positive definition, box tightness
   convention, minimum visible size, ambiguous-case handling, photo example)
   for each of the 11 classes above.
