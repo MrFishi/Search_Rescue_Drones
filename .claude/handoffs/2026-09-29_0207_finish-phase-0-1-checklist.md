@@ -5,7 +5,7 @@ session_id: f4832a6f-ec78-4c45-b80a-0de3e7feb29a
 machine: Crystallina
 created: 2026-09-29 02:07 AWST
 repo_ref: main @ cdd3bce
-status: open
+status: superseded
 ---
 
 ## Goal
