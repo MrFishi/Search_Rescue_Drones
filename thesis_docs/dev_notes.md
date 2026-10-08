@@ -478,3 +478,155 @@ Cosmetic-only noise, not a bug: `rmw_cyclonedds_cpp` logs a "Failed to parse typ
 hash" WARN per `px4_msgs` topic on every `ros2 topic list`/`echo`/node start. Topics
 still list and data still flows; this is a known cyclonedds/px4_msgs type-hash
 metadata quirk, not a bridge failure.
+
+---
+
+## 2026-10-07 — P2.1 Lito X1 test flight: what the files contain
+
+First test flight with the Lito X1 (30 m survey altitude, gimbal at 45° and 90°, plus
+stills at 20/40/60 m at both angles). Files stay on the SD card for now, in
+`DCIM/DJI_001/thesis/`; `RENAME_MAP.csv` in the card root maps the short names back to the
+DJI originals and timestamps. Nothing from the flight is in the repo yet.
+
+Gimbal convention: **pitch is measured down from the horizon**, so 90° is nadir (straight
+down) and 45° is the oblique setting for the main drone. Stills store it as XMP
+`GimbalPitchDegree` with the opposite sign (−90 is nadir); the decoded video value is
+positive-down. The gimbal does not snap exactly: the "45°" stills read −44° to −46°.
+
+**Formats**
+
+- Video: 3840×2160, 59.94 fps, HEVC, about 82 Mbps, 16:9. Stills: 4032×3024 (4:3), 6.7 mm
+  (24 mm equivalent). Photo and video aspect ratios differ, so the video is probably a
+  sensor crop. EXIF reports a 73.7° FOV (an exiftool composite, not checked); the 82.1°
+  vendor figure is a diagonal. True HFOV/VFOV still to be derived.
+- Stills carry full metadata inside the JPG (EXIF + XMP): GPS, relative and absolute
+  altitude, gimbal pitch/yaw/roll, flight attitude, speed. Read with `exiftool`. It is lost
+  if the JPG is re-saved by an editor.
+- Video has two metadata sources: the `.SRT` sidecar (only if captions are on; the first two
+  test clips were recorded without it) and a `djmd` data track inside the MP4. A third
+  track, `dbgi`, was not decoded. The default Ubuntu player warns about both tracks
+  ("decoder required"); playback is fine, and VLC/mpv do not complain.
+
+**SRT fields** (one row per frame, 60 per second): timestamp to the millisecond, ISO,
+shutter, f-number, EV, colour mode, focal length, latitude, longitude, relative and absolute
+altitude, colour temperature, tint. **No gimbal pitch and no heading.**
+
+**`djmd` track.** DJI protobuf (header names `dvtm_Lito_X1.proto`; the schema file is not
+available, so field meanings were inferred by comparison with the SRT). One record per
+frame, same count as the SRT. Extract with ffmpeg (`-map 0:1 -c copy -f data`, record
+sizes from `-f framecrc`), then read as generic protobuf. Compared frame by frame against
+the SRT over five clips (15,457 frames), with **zero mismatches** for:
+
+| SRT field | `djmd` field | Note |
+|---|---|---|
+| latitude, longitude | `/3/3/4/1/2`, `/3/3/4/1/3` | |
+| relative altitude | `/3/3/5/1` | millimetres |
+| absolute altitude | `/3/3/4/2` | millimetres |
+| ISO | `/3/2/9/1` | varies in 2 of 5 clips |
+| colour temperature | `/3/2/32/1` | varies in every clip |
+| EV | `/3/2/31/1` | constant 0.3 |
+
+`djmd` also holds an orientation quaternion in `/3/4/4` (order x, y, z, w). The pitch from it
+reads 45.4° throughout the oblique pass, 90° in the nadir hovers, and falls from 90° to 4.4°
+on the descent, matching the footage, so **per-frame gimbal pitch for video comes from
+`djmd`**. Yaw from this quaternion is unreliable near nadir (gimbal singularity).
+
+Not in `djmd`: wall-clock time (only a monotonic 16.68 ms frame clock; the MP4 creation date
+gives the start to the nearest second), shutter speed, tint. Aperture and focal length are
+also absent but constant (f/1.7, 24 mm). `/3/3/3/1-3` and `/3/3/2` were not identified;
+`/3/3/3` is not GPS speed.
+
+**Decision (2026-10-08): read both.** Pitch from `djmd`, shutter / tint / millisecond time from
+the SRT, everything else is identical in both. Keep the `.SRT` next to every clip; they are
+about 1 MB against 600 MB for the video, and the `djmd` layout is undocumented, so it could
+change with firmware or on a different drone (the main drone may differ), and data tracks
+are often stripped when a clip is trimmed or re-exported (not tested here). Check the decoder against the SRT again on any new
+firmware or drone.
+
+Telemetry goes into the P2.4 manifest and is used to stratify results (altitude, pitch,
+lighting, shutter) and to compute ground sample distance. It is **not** a model input: the
+detectors take the image only, so the six-architecture comparison stays like for like.
+
+**Still open from this flight:** whether the DJI app exports a flight log and in what
+format; battery endurance (not measured; the expected range is 15–25 min, to be logged
+from real sessions); true HFOV/VFOV and ground size per pixel at 45° versus 90°;
+the `djmd` parser itself (not written; the exploratory decoder is not in the repo).
+
+**Parser (2026-10-08).** `vision/telemetry/{dji,extract,plot}.py` now reads all three sources
+(stills EXIF/XMP, SRT, `djmd`) in pure Python and writes per-frame CSVs, a per-clip summary
+and a stills table, plus PNG plots. Re-run on the five thesis clips, `--check` still gives
+zero SRT-vs-`djmd` mismatches. Usage is in `vision/README.md`.
+
+---
+
+## 2026-10-08 — Wave 0 pilot: pixel sizes and the 45° decision
+
+Stills (82, 3-15 m, 45° and 90°) are on the card under `thesis/wave0_pilot/2026-10-08/`; tables,
+plots and the pixel-size predictions are in `flights/2026-10-08_wave0_pilot/`. The orbit
+video (15 s, 3.9-8.4 m, pitch 14-35°, 4.9 m/s mean) was copied alongside; its SRT and
+`djmd` still agree on every frame.
+
+**Camera angle decided: 45° only** for the drone being built; a servo to switch 45°/90° is a
+possible later retrofit. **Slope check dropped:** the drone always flies 5-10 m above ground.
+
+**Geometry check.** Stills are 4032x3024. From the 82.1° diagonal: HFOV about 69.5°, VFOV
+about 55.5°, f about 2906 px, so nadir ground size is about 0.035 cm per pixel per metre of
+height. COCO-pretrained yolo11s (weights in `vision/training/`) was used only to get first-pass
+boxes for people and backpacks, checked by eye: it duplicates boxes, calls a jacket a
+backpack, misses a bottle from above, and has no sunglasses class, so it was not used for the
+table. Backpack size, measured over predicted, was 1.07-1.09 at every nadir height (3, 5,
+10, 15 m) and 1.06 overall at 45° (IQR 0.98-1.17). Anchors from the 3 m nadir stills: teal
+bottle about 21 cm long, sunglasses about 14.5 cm across, backpack box about 64 x 50 cm with
+straps splayed.
+
+**Result.** At 45° and 5-10 m every class is above 8 px at the centre of the frame, but at
+the far edge a sunglasses along the view direction is 4-8 px and a water bottle 6-12 px
+(table in `collection_plan.md` 3.2). That comes from the 45° mount, not the height. A
+standing person looks larger than predicted at low heights because the head is nearer
+the camera than the ground.
+
+Limits: sizes are inferred from one set of props; boxes were not hand-annotated; the
+`djmd` fields `/3/3/2` and `/3/3/3` remain unidentified.
+
+---
+
+## 2026-10-08 (evening) — Phase 0/1 status, SD card layout, occlusion rules
+
+**SD card layout (Lito X1 card, `DCIM/DJI_001/`).** Thesis footage lives under
+`thesis/wave0_pilot/<date>/`; for 2026-10-08 that is `nadir/` (37 stills), `obl45/` (45 stills)
+and `video/` (the orbit clip, copied; the original is still in place). Stills are named
+`<angle>_h<rounded height m>m_<nn>`. The empty `thesis/wave1_object_only`,
+`wave2_person_present` and `wave3_topups` folders are ready. Files outside `thesis/` are
+deliberately untouched: the 12:45-12:52 home shots (not thesis), the circle video `0095`, the
+water and skyline stills `0101-0108`, and the ground-level stills `0097-0100`. Thesis `.LRF`
+proxy files were deleted (author does not need them). The footage exists only on the card; git
+holds the derived tables in `flights/` and the rename maps. `pixel_size.py` regenerates the
+pixel-size table and plot.
+
+**Occlusion strategy decided in principle** (recorded in `collection_plan.md` 3.5): natural
+staged tiers are the evidence, synthetic occlusion is the instrument and an optional training
+arm. If used in training: `--distractor-rate`, fixed seed, frozen on disk, full box, tagged
+`synthetic_occlusion`, never in the test split. A model trained with it gets its own
+degradation curve; the baseline sweep uses one trained without it. Natural staging methods
+to be planned prop by prop before Wave 1.
+
+**Phase 0 and 1 status, from the repo on 2026-10-08.**
+
+- Phase 0 done: P0.3 repo layout, P0.4 environment, P0.5 datasets, P0.7 sim smoke test
+  (2026-09-30), the P0.2 class list (locked 2026-10-06). Ethics is handled by the author.
+- Phase 0 open: P0.6 CVAT (not running; `docker` on the laptop is a podman shim, the old
+  plumbing was removed); P0.2 close-out (protocol `[confirm]` items, 7.1, 7.2, target sign-off);
+  P0.8 Jetson (part number P3767-0005 vs -0003, TensorRT FP32/FP16 latency to `runs.csv`,
+  10-minute thermal soak, loose CAM0 connector).
+- Phase 1 done: P1.1, P1.2, P1.3 (baselines A and B trained; val rows in `results/runs.csv`).
+- Phase 1 open: P1.4 eval harness (`vision/eval/` does not exist yet; needs per-class
+  `runs.csv` rows, `provenance_filter` assert, SAHI full-frame eval, centre-distance metric);
+  score Baseline A on the official HERIDAL test set (1957 tiles; the 0.954 mAP50 is val, so
+  this checks for leakage); verify Weitefeld `--core-only` (the provenance shows
+  `core_only=False`, target about 405 findings) and score Baseline B; P1.5 frozen occlusion
+  sets (tool built in `vision/occlusion/occlude.py`, nothing generated; 0/10/20/40/60/80% in
+  `cutout` and `texture`, with `--verify`); P1.6 the two degradation curves; P1.7 TensorRT
+  on-device numbers (needs the Jetson).
+
+**Plan for the weekend (author, RTX PC):** finish P0 and P1, do some CVAT labelling as a check,
+then plan Wave 1, including a prop-by-prop plan for natural and synthetic occlusion.

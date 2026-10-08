@@ -63,3 +63,6 @@ data/processed/*/*
 # Only the machine-local pointer files are excluded (regenerated on every run).
 graphify-out/.graphify_root
 graphify-out/.graphify_python
+
+# per-frame telemetry CSVs: regenerable from the footage with vision/telemetry/extract.py
+flights/*/clips/

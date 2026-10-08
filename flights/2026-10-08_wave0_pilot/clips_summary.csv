@@ -1,0 +1,2 @@
+clip,srt_present,djmd_present,frames,duration_s,width,height,fps,start_local,lat_start,lon_start,rel_alt_start_m,rel_alt_end_m,rel_alt_min_m,rel_alt_max_m,pitch_mean_deg,pitch_min_deg,pitch_max_deg,pitch_const,path_len_m,speed_mean_mps,speed_max_mps,iso_max,shutter_slowest_s,shutter_fastest_s,ct_mean_k
+orbit_around_person.MP4,True,True,890,14.83,3840,2160,59.94,2026-10-08 17:17:50.763,-31.996719,115.811759,3.9,3.7,3.7,8.4,25.025973141954694,14.50468864601621,33.67783884678565,False,67.4,4.848740416492013,9.667214934146019,130,0.00625,0.0025,5159.123595505618
